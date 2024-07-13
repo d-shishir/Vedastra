@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, Alert, StyleSheet } from "react-native";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
+import { storeToken } from "../utils/tokenStorage";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
@@ -8,19 +9,19 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        "http://192.168.1.64:5000/api/users/login",
-        {
-          email,
-          password,
-        }
-      );
-      // Store token and navigate to home screen
-      // After successful login, navigate to HomeScreen
-      navigation.navigate("Home");
+      const response = await axiosInstance.post("/users/login", {
+        email,
+        password,
+      });
+      const { token } = response.data;
 
-      console.log(response.data.token);
+      // Store token in AsyncStorage
+      await storeToken(token);
+
+      // Navigate to Home screen or any other screen
+      navigation.navigate("Home");
     } catch (error) {
+      console.error("Login error:", error);
       Alert.alert("Error", "Invalid credentials");
     }
   };

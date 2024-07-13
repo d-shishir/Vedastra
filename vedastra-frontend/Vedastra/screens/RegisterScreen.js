@@ -12,7 +12,8 @@ import {
   Text,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import axios from "axios";
+import axiosInstance from "../api/axiosInstance";
+import { storeToken } from "../utils/tokenStorage";
 import { searchLocation } from "../utils/locationiq"; // Import the LocationIQ utility
 import debounce from "lodash/debounce";
 
@@ -35,32 +36,35 @@ const RegisterScreen = ({ navigation }) => {
     }
 
     try {
-      // Combine birthdate and birthtime into combinedBirthdate
       let combinedBirthdate = new Date(birthdate);
       combinedBirthdate.setHours(birthtime.getHours());
       combinedBirthdate.setMinutes(birthtime.getMinutes());
 
-      const response = await axios.post(
-        "http://192.168.1.64:5000/api/users/register",
-        {
-          name,
-          email,
-          password,
-          birthdate: combinedBirthdate.toISOString(),
-          birthplace,
-          profilePicture,
-          preferences: {
-            dailyHoroscope: true,
-            personalizedReadings: true,
-          },
-        }
-      );
+      const response = await axiosInstance.post("/users/register", {
+        name,
+        email,
+        password,
+        birthdate: combinedBirthdate.toISOString(),
+        birthplace,
+        profilePicture,
+        preferences: {
+          dailyHoroscope: true,
+          personalizedReadings: true,
+        },
+      });
+
+      await storeToken(response.data.token);
 
       Alert.alert("Success", "Registered successfully!");
-      navigation.navigate("Login");
+      navigation.navigate("Home");
     } catch (error) {
-      console.error("Registration error:", error); // Log the error
-      Alert.alert("Error", "Registration failed");
+      console.error("Registration error:", error);
+      if (error.response) {
+        const { data } = error.response;
+        Alert.alert("Error", data.msg || "Registration failed");
+      } else {
+        Alert.alert("Error", "Registration failed. Please try again later.");
+      }
     }
   };
 
