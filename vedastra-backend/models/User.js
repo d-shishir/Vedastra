@@ -5,12 +5,19 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   birthdate: { type: Date, required: true },
-  birthtime: { type: String },
   birthplace: { type: String },
   profilePicture: { type: String },
   preferences: {
     dailyHoroscope: { type: Boolean, default: true },
     personalizedReadings: { type: Boolean, default: true },
+  },
+  // Location fields (example)
+  location: {
+    city: { type: String },
+    state: { type: String },
+    country: { type: String },
+    latitude: { type: Number },
+    longitude: { type: Number },
   },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

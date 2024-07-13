@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 // User registration
 exports.registerUser = async (req, res) => {
-  const { name, email, password, birthdate, birthtime, birthplace } = req.body;
+  const { name, email, password, birthdate, location } = req.body;
 
   try {
     let user = await User.findOne({ email });
@@ -17,8 +17,8 @@ exports.registerUser = async (req, res) => {
       email,
       password,
       birthdate,
-      birthtime,
-      birthplace,
+      birthplace: location.city, // Assuming 'city' is part of location data
+      // Add other location-related fields as needed (e.g., latitude, longitude, country, state)
     });
 
     const salt = await bcrypt.genSalt(10);
