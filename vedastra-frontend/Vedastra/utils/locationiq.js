@@ -14,7 +14,12 @@ export const searchLocation = async (query) => {
         limit: 5,
       },
     });
-    return response.data;
+    return response.data.map((result) => ({
+      place_id: result.place_id,
+      display_name: result.display_name,
+      lat: result.lat,
+      lon: result.lon,
+    }));
   } catch (error) {
     console.error("Error fetching location data:", error);
     throw error;

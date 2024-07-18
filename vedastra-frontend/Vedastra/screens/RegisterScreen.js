@@ -28,6 +28,7 @@ const RegisterScreen = ({ navigation }) => {
   const [birthplace, setBirthplace] = useState("");
   const [profilePicture, setProfilePicture] = useState("");
   const [locationResults, setLocationResults] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   const handleRegister = async () => {
     if (!name || !email || !password || !birthdate || !birthplace) {
@@ -51,6 +52,7 @@ const RegisterScreen = ({ navigation }) => {
           dailyHoroscope: true,
           personalizedReadings: true,
         },
+        location: selectedLocation, // Send the selected location details
       });
 
       await storeToken(response.data.token);
@@ -91,6 +93,8 @@ const RegisterScreen = ({ navigation }) => {
             results.map((result) => ({
               id: result.place_id,
               description: result.display_name,
+              latitude: result.lat,
+              longitude: result.lon,
             }))
           );
         } catch (error) {
@@ -108,8 +112,13 @@ const RegisterScreen = ({ navigation }) => {
     debouncedLocationSearch(query);
   };
 
-  const handleLocationSelect = (description) => {
-    setBirthplace(description);
+  const handleLocationSelect = (location) => {
+    setBirthplace(location.description);
+    setSelectedLocation({
+      city: location.description, // Adjust this based on your needs
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
     setLocationResults([]);
   };
 
@@ -185,9 +194,7 @@ const RegisterScreen = ({ navigation }) => {
           data={locationResults}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => handleLocationSelect(item.description)}
-            >
+            <TouchableOpacity onPress={() => handleLocationSelect(item)}>
               <Text style={styles.locationItem}>{item.description}</Text>
             </TouchableOpacity>
           )}

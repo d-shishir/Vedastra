@@ -1,31 +1,35 @@
-const DailyHoroscope = require("../models/DailyHoroscope");
+const User = require("../models/User");
+const Horoscope = require("../models/Horoscope");
+const {
+  calculateJulianDate,
+  calculatePlanetaryPositions,
+  calculateHouses,
+  calculateCurrentTransits,
+  patternMatching,
+} = require("../utils/astrology");
+const { generateHoroscopeText } = require("../utils/nlp");
 
-// Create a daily horoscope
 exports.createDailyHoroscope = async (req, res) => {
-  const { date, sign, content } = req.body;
+  const { userId } = req.body;
+  const user = await User.findById(userId);
 
-  try {
-    const newHoroscope = new DailyHoroscope({
-      date,
-      sign,
-      content,
-    });
+  const jd = calculateJulianDate(user.birthdate, user.birthTime);
+  const natalChart = calculatePlanetaryPositions(jd);
+  const houses = calculateHouses(jd, user.birthplace);
 
-    const horoscope = await newHoroscope.save();
-    res.json(horoscope);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
+  const currentTransits = calculateCurrentTransits();
+  const score = patternMatching(natalChart, currentTransits);
+
+  const astrologicalData = { natalChart, houses, currentTransits, score };
+  const horoscopeText = await generateHoroscopeText(astrologicalData);
+
+  const horoscope = new Horoscope({ userId: user._id, horoscopeText });
+  await horoscope.save();
+
+  res.json({ horoscopeText });
 };
 
-// Get daily horoscopes
 exports.getDailyHoroscopes = async (req, res) => {
-  try {
-    const horoscopes = await DailyHoroscope.find();
-    res.json(horoscopes);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
-  }
+  const horoscopes = await Horoscope.find().populate("userId");
+  res.json(horoscopes);
 };

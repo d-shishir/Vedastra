@@ -1,3 +1,4 @@
+// routes/dailyHoroscopeRoutes.js
 const express = require("express");
 const router = express.Router();
 const dailyHoroscopeController = require("../controllers/dailyHoroscopeController");
