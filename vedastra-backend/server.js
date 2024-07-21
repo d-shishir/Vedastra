@@ -2,7 +2,7 @@
 const dotenv = require("dotenv");
 dotenv.config();
 
-console.log(process.env.MONGO_URI); // This should log your MongoDB URI
+console.log(process.env.JWT_SECRET); // This should log your JWT secret
 
 const app = require("./app");
 
