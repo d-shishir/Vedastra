@@ -1,0 +1,252 @@
+{
+  "aspects": {
+    "conjunction": {
+      "description": "A period of merging energies, leading to new beginnings.",
+      "interpretation": "Planets in conjunction work together and amplify each other's effects, bringing focus and intensity to the areas of life they influence. For example, if the Sun and Moon are in conjunction, it might indicate a time for new personal beginnings or setting new goals that align with your core values."
+    },
+    "opposition": {
+      "description": "Conflict and tension, calling for balance and compromise.",
+      "interpretation": "Planets in opposition challenge each other, creating a dynamic of push and pull that can lead to growth through resolution and understanding. For example, if Mars opposes Saturn, it may manifest as a struggle between your desires and your responsibilities, urging you to find a balance."
+    },
+    "square": {
+      "description": "Challenges and obstacles, urging growth and change.",
+      "interpretation": "Planets in square aspect create tension and friction, pushing individuals to overcome difficulties and transform through effort and adaptation. For example, a square between Venus and Pluto might bring challenges in relationships that require deep personal transformation."
+    },
+    "trine": {
+      "description": "Harmony and ease, enhancing opportunities and talents.",
+      "interpretation": "Planets in trine aspect flow together smoothly, bringing natural support and ease in the areas of life they influence, facilitating growth and development. For instance, a trine between Mercury and Jupiter could enhance your ability to communicate effectively and expand your knowledge with ease."
+    },
+    "sextile": {
+      "description": "Opportunities and potential, requiring action for benefits.",
+      "interpretation": "Planets in sextile aspect create opportunities that are available but require effort and initiative to realize their full potential. For example, a sextile between the Sun and Uranus might bring innovative opportunities that need proactive steps to take advantage of."
+    }
+  },
+  "houses": {
+    "1": {
+      "description": "Focus on self, personality, and appearance.",
+      "interpretation": "The first house represents the self, personal identity, and how one presents themselves to the world. It deals with personal beginnings and first impressions. Today, focus on personal growth and how you present yourself to others. It’s a good time for making changes to your appearance or working on self-improvement."
+    },
+    "2": {
+      "description": "Attention to finances, possessions, and values.",
+      "interpretation": "The second house is associated with material resources, personal values, and financial stability. Use this day to manage your finances, review your budget, and assess your values. It’s also a good time to consider your personal possessions and what they mean to you."
+    },
+    "3": {
+      "description": "Communication, learning, and local environment.",
+      "interpretation": "The third house governs communication, intellectual activities, and interactions with the immediate environment. Engage in learning, connect with others, and address matters related to your local community and immediate surroundings."
+    },
+    "4": {
+      "description": "Home, family, and emotional foundation.",
+      "interpretation": "The fourth house relates to one's home, family background, and emotional roots. Focus on domestic matters, nurture family relationships, and create a sense of emotional security. It’s a good day to address home-related issues and personal foundations."
+    },
+    "5": {
+      "description": "Creativity, romance, and children.",
+      "interpretation": "The fifth house is about self-expression, creativity, and romantic endeavors. It’s a great day for pursuing creative projects, enjoying romantic moments, and spending time with children. Embrace opportunities for fun and self-expression."
+    },
+    "6": {
+      "description": "Work, health, and daily routines.",
+      "interpretation": "The sixth house focuses on daily work, health, and routines. Organize your tasks, improve work efficiency, and address health matters. Use this day to enhance your daily habits and overall well-being."
+    },
+    "7": {
+      "description": "Partnerships, relationships, and marriage.",
+      "interpretation": "The seventh house deals with one-on-one relationships, partnerships, and marriage. Strengthen your connections with others, resolve conflicts, and focus on personal interactions. It’s an important day for building and maintaining relationships."
+    },
+    "8": {
+      "description": "Transformation, shared resources, and intimacy.",
+      "interpretation": "The eighth house covers transformation, shared resources, and deep, intimate bonds. Address issues related to shared finances, personal growth, and intimacy. It’s a good time to explore deeper aspects of your relationships and personal development."
+    },
+    "9": {
+      "description": "Philosophy, travel, and higher education.",
+      "interpretation": "The ninth house is associated with higher learning, philosophy, and long-distance travel. Expand your horizons, pursue educational goals, and explore new cultures. Embrace opportunities for growth and adventure."
+    },
+    "10": {
+      "description": "Career, public life, and reputation.",
+      "interpretation": "The tenth house focuses on career and public status. Advance your professional goals, enhance your reputation, and address public matters. It’s a significant day for making strides in your career and long-term ambitions."
+    },
+    "11": {
+      "description": "Friendships, groups, and aspirations.",
+      "interpretation": "The eleventh house governs social networks, friendships, and long-term goals. Connect with friends, engage in group activities, and work towards your aspirations. Focus on your social life and collective endeavors."
+    },
+    "12": {
+      "description": "Subconscious, solitude, and hidden matters.",
+      "interpretation": "The twelfth house relates to the subconscious mind, solitude, and hidden aspects of life. Spend time in introspection, address hidden issues, and focus on spiritual growth. It’s a good day for reflection and self-discovery."
+    }
+  },
+  "signs": {
+    "Aries": {
+      "description": "Energetic, assertive, and pioneering.",
+      "interpretation": "Aries, you may feel a surge of energy and confidence today. Embrace new opportunities and take the initiative in your projects. Your assertive nature will help you achieve your goals and make a strong impact."
+    },
+    "Taurus": {
+      "description": "Practical, reliable, and grounded.",
+      "interpretation": "Taurus, focus on stability and comfort today. It’s a good time to address financial matters, enjoy material pleasures, and reinforce your security. Seek out ways to enhance your sense of stability and well-being."
+    },
+    "Gemini": {
+      "description": "Curious, adaptable, and communicative.",
+      "interpretation": "Gemini, your communication skills and curiosity are heightened today. Engage in conversations, explore new ideas, and connect with others. Embrace opportunities for learning and sharing your thoughts."
+    },
+    "Cancer": {
+      "description": "Nurturing, intuitive, and protective.",
+      "interpretation": "Cancer, focus on home and family matters today. Nurture your relationships with loved ones, address emotional needs, and create a sense of security in your home environment. Your intuition will guide you in personal matters."
+    },
+    "Leo": {
+      "description": "Confident, creative, and charismatic.",
+      "interpretation": "Leo, your creativity and charisma shine today. Take advantage of opportunities to express yourself, pursue creative endeavors, and make a memorable impression. Your confidence will help you stand out and achieve your goals."
+    },
+    "Virgo": {
+      "description": "Analytical, practical, and detail-oriented.",
+      "interpretation": "Virgo, focus on your work and daily routines today. Use your analytical skills to address tasks, improve efficiency, and take care of health matters. Organize your environment and refine your approach to daily responsibilities."
+    },
+    "Libra": {
+      "description": "Balanced, diplomatic, and sociable.",
+      "interpretation": "Libra, your social life and relationships are highlighted today. Engage in diplomatic interactions, focus on harmony in your connections, and seek opportunities for socializing. Balance your personal needs with those of others."
+    },
+    "Scorpio": {
+      "description": "Intense, passionate, and transformative.",
+      "interpretation": "Scorpio, you may experience a deep sense of transformation and intensity today. Focus on personal growth, explore emotional depths, and address any issues related to shared resources or intimacy."
+    },
+    "Sagittarius": {
+      "description": "Optimistic, adventurous, and philosophical.",
+      "interpretation": "Sagittarius, embrace your adventurous spirit and explore new horizons today. Focus on expanding your knowledge, pursuing travel opportunities, and engaging in philosophical discussions. Your optimism will drive you towards growth and exploration."
+    },
+    "Capricorn": {
+      "description": "Ambitious, disciplined, and practical.",
+      "interpretation": "Capricorn, your career and long-term goals are in focus today. Use your discipline and practicality to advance your professional ambitions, address public matters, and make progress in your achievements."
+    },
+    "Aquarius": {
+      "description": "Innovative, humanitarian, and unconventional.",
+      "interpretation": "Aquarius, your originality and progressive thinking are highlighted today. Embrace innovative ideas, engage in humanitarian efforts, and explore unconventional solutions. Your unique perspective will contribute to meaningful change."
+    },
+    "Pisces": {
+      "description": "Compassionate, intuitive, and imaginative.",
+      "interpretation": "Pisces, focus on your intuition and creativity today. Allow your compassion and imagination to guide you in personal and spiritual matters. It’s a good day for reflection, artistic pursuits, and connecting with your inner self."
+    }
+  },
+  "daily_horoscope": {
+    "aspects": {
+      "Sun-Conjunction-Moon": {
+        "description": "A period of merging energies, leading to new beginnings.",
+        "interpretation": "Today, the Sun and Moon align in your chart, bringing a sense of inner harmony and alignment between your emotions and goals. It’s an excellent day for setting new intentions or starting projects that resonate deeply with your core values. Trust your instincts and take decisive action."
+      },
+      "Venus-Trine-Jupiter": {
+        "description": "Harmony and ease, enhancing opportunities and talents.",
+        "interpretation": "With Venus and Jupiter forming a trine aspect, you may experience a boost in your social life, creativity, and financial opportunities. It’s a favorable time for expanding your social circle, enjoying the pleasures of life, and pursuing artistic or financial ventures. Embrace the positive energy and enjoy the rewards."
+      },
+      "Mars-Square-Saturn": {
+        "description": "Challenges and obstacles, urging growth and change.",
+        "interpretation": "The square aspect between Mars and Saturn can create tension and obstacles in your efforts. It’s important to be patient and persistent, as this aspect encourages disciplined work and careful planning despite potential frustrations. Use this time to address any issues methodically and with determination."
+      },
+      "Mercury-Sextile-Uranus": {
+        "description": "Opportunities and potential, requiring action for benefits.",
+        "interpretation": "Mercury and Uranus are in a sextile aspect, bringing opportunities for innovative thinking and unexpected insights. It’s a great day to embrace new ideas, communicate your unique perspectives, and explore unconventional solutions. Stay open to sudden changes and be ready to adapt quickly."
+      },
+      "Venus-Square-Neptune": {
+        "description": "Confusion and illusion, affecting relationships and finances.",
+        "interpretation": "The square aspect between Venus and Neptune can lead to confusion or unrealistic expectations in relationships and financial matters. Be cautious of idealizing situations or people and ensure you have clear, practical plans. Avoid making major financial decisions or commitments today."
+      },
+      "Sun-Sextile-Saturn": {
+        "description": "Supportive energy for discipline and structure.",
+        "interpretation": "With the Sun sextile Saturn, you may find it easier to focus on long-term goals and work diligently towards them. This aspect supports efforts requiring discipline, organization, and persistence. It’s a good day to make progress on projects that require sustained effort and careful planning."
+      }
+    },
+    "house_focus": {
+      "1": {
+        "description": "Focus on self, personality, and appearance.",
+        "interpretation": "Today, the first house highlights personal growth and self-improvement. It's an excellent time to take initiative, work on personal projects, and make a positive impression on others. Focus on your self-image and how you present yourself to the world."
+      },
+      "2": {
+        "description": "Attention to finances, possessions, and values.",
+        "interpretation": "The second house brings attention to material resources, personal values, and financial stability. Use this day to manage your finances, review your budget, and assess your values. It’s also a good time to consider your personal possessions and what they mean to you."
+      },
+      "3": {
+        "description": "Communication, learning, and local environment.",
+        "interpretation": "The third house emphasizes communication and intellectual activities. It’s a great day to connect with others, engage in learning, and address matters related to your immediate environment. Focus on your interactions with siblings, neighbors, and your local community."
+      },
+      "4": {
+        "description": "Home, family, and emotional foundation.",
+        "interpretation": "The fourth house highlights home and family matters. It’s an ideal day for addressing domestic issues, nurturing family relationships, and creating a sense of emotional security. Focus on your home environment and personal foundation."
+      },
+      "5": {
+        "description": "Creativity, romance, and children.",
+        "interpretation": "The fifth house encourages self-expression and creativity. It’s a great day for romantic pursuits, creative projects, and spending time with children. Embrace opportunities for fun and enjoyment, and allow your creativity to flourish."
+      },
+      "6": {
+        "description": "Work, health, and daily routines.",
+        "interpretation": "The sixth house brings focus to your daily work, health, and routines. It’s a good day to organize your tasks, improve your work efficiency, and address health concerns. Consider how you can enhance your daily habits and overall well-being."
+      },
+      "7": {
+        "description": "Partnerships, relationships, and marriage.",
+        "interpretation": "The seventh house emphasizes relationships and partnerships. Use this time to strengthen your connections with others, resolve conflicts, and focus on your one-on-one interactions. It’s an important day for building and maintaining meaningful relationships."
+      },
+      "8": {
+        "description": "Transformation, shared resources, and intimacy.",
+        "interpretation": "The eighth house highlights transformation and deep connections. Focus on issues related to shared resources, intimacy, and personal growth. It’s a good time for addressing financial matters involving others and exploring deeper aspects of your relationships."
+      },
+      "9": {
+        "description": "Philosophy, travel, and higher education.",
+        "interpretation": "The ninth house brings attention to philosophy, travel, and higher learning. It’s a great day for expanding your horizons, pursuing educational goals, and exploring new cultures. Embrace opportunities for growth and adventure."
+      },
+      "10": {
+        "description": "Career, public life, and reputation.",
+        "interpretation": "The tenth house focuses on career and public life. Use this time to advance your professional goals, enhance your reputation, and address any public or career-related issues. It’s an important day for making strides in your long-term ambitions."
+      },
+      "11": {
+        "description": "Friendships, groups, and aspirations.",
+        "interpretation": "The eleventh house highlights social networks and aspirations. Focus on your friendships, group activities, and long-term goals. It’s a good day to connect with like-minded individuals and work towards your personal aspirations."
+      },
+      "12": {
+        "description": "Subconscious, solitude, and hidden matters.",
+        "interpretation": "The twelfth house brings attention to the subconscious mind and solitude. It’s a good day for introspection, addressing hidden issues, and focusing on spiritual growth. Consider spending time in reflection and self-discovery."
+      }
+    },
+    "sign_influences": {
+      "Aries": {
+        "description": "Energetic, assertive, and pioneering.",
+        "interpretation": "Aries, you may feel a surge of energy and confidence today. Embrace new opportunities and take the initiative in your projects. Your assertive nature will help you achieve your goals and make a strong impact."
+      },
+      "Taurus": {
+        "description": "Practical, reliable, and grounded.",
+        "interpretation": "Taurus, focus on stability and comfort today. It’s a good time to address financial matters, enjoy material pleasures, and reinforce your security. Seek out ways to enhance your sense of stability and well-being."
+      },
+      "Gemini": {
+        "description": "Curious, adaptable, and communicative.",
+        "interpretation": "Gemini, your communication skills and curiosity are heightened today. Engage in conversations, explore new ideas, and connect with others. Embrace opportunities for learning and sharing your thoughts."
+      },
+      "Cancer": {
+        "description": "Nurturing, intuitive, and protective.",
+        "interpretation": "Cancer, focus on home and family matters today. Nurture your relationships with loved ones, address emotional needs, and create a sense of security in your home environment. Your intuition will guide you in personal matters."
+      },
+      "Leo": {
+        "description": "Confident, creative, and charismatic.",
+        "interpretation": "Leo, your creativity and charisma shine today. Take advantage of opportunities to express yourself, pursue creative endeavors, and make a memorable impression. Your confidence will help you stand out and achieve your goals."
+      },
+      "Virgo": {
+        "description": "Analytical, practical, and detail-oriented.",
+        "interpretation": "Virgo, focus on your work and daily routines today. Use your analytical skills to address tasks, improve efficiency, and take care of health matters. Organize your environment and refine your approach to daily responsibilities."
+      },
+      "Libra": {
+        "description": "Balanced, diplomatic, and sociable.",
+        "interpretation": "Libra, your social life and relationships are highlighted today. Engage in diplomatic interactions, focus on harmony in your connections, and seek opportunities for socializing. Balance your personal needs with those of others."
+      },
+      "Scorpio": {
+        "description": "Intense, passionate, and transformative.",
+        "interpretation": "Scorpio, you may experience a deep sense of transformation and intensity today. Focus on personal growth, explore emotional depths, and address any issues related to shared resources or intimacy."
+      },
+      "Sagittarius": {
+        "description": "Optimistic, adventurous, and philosophical.",
+        "interpretation": "Sagittarius, embrace your adventurous spirit and explore new horizons today. Focus on expanding your knowledge, pursuing travel opportunities, and engaging in philosophical discussions. Your optimism will drive you towards growth and exploration."
+      },
+      "Capricorn": {
+        "description": "Ambitious, disciplined, and practical.",
+        "interpretation": "Capricorn, your career and long-term goals are in focus today. Use your discipline and practicality to advance your professional ambitions, address public matters, and make progress in your achievements."
+      },
+      "Aquarius": {
+        "description": "Innovative, humanitarian, and unconventional.",
+        "interpretation": "Aquarius, your originality and progressive thinking are highlighted today. Embrace innovative ideas, engage in humanitarian efforts, and explore unconventional solutions. Your unique perspective will contribute to meaningful change."
+      },
+      "Pisces": {
+        "description": "Compassionate, intuitive, and imaginative.",
+        "interpretation": "Pisces, focus on your intuition and creativity today. Allow your compassion and imagination to guide you in personal and spiritual matters. Engage in artistic activities and seek out opportunities for emotional connection and growth."
+      }
+    }
+  }
+}
