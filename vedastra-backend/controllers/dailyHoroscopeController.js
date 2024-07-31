@@ -1,48 +1,68 @@
-const User = require("../models/User");
-const Horoscope = require("../models/Horoscope");
-const {
-  calculateJulianDate,
-  calculatePlanetaryPositions,
-  calculateHouses,
-  calculateCurrentTransits,
-  patternMatching,
-} = require("../utils/astrology");
-const { generateHoroscopeText } = require("../utils/nlp");
+const User = require("../models/User"); // Adjust path if needed
 
-exports.createDailyHoroscope = async (req, res) => {
+// Function to determine Zodiac Sign
+const getZodiacSign = (birthdate) => {
   try {
-    const { userId } = req.body;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    const date = new Date(birthdate);
+    const month = date.getUTCMonth() + 1; // Months are 0-indexed, so add 1
+    const day = date.getUTCDate();
+
+    const zodiacSigns = [
+      { sign: "capricorn", endDate: new Date(date.getFullYear(), 0, 19) },
+      { sign: "aquarius", endDate: new Date(date.getFullYear(), 1, 18) },
+      { sign: "pisces", endDate: new Date(date.getFullYear(), 2, 20) },
+      { sign: "aries", endDate: new Date(date.getFullYear(), 3, 19) },
+      { sign: "taurus", endDate: new Date(date.getFullYear(), 4, 20) },
+      { sign: "gemini", endDate: new Date(date.getFullYear(), 5, 20) },
+      { sign: "cancer", endDate: new Date(date.getFullYear(), 6, 22) },
+      { sign: "leo", endDate: new Date(date.getFullYear(), 7, 22) },
+      { sign: "virgo", endDate: new Date(date.getFullYear(), 8, 22) },
+      { sign: "libra", endDate: new Date(date.getFullYear(), 9, 22) },
+      { sign: "scorpio", endDate: new Date(date.getFullYear(), 10, 21) },
+      { sign: "sagittarius", endDate: new Date(date.getFullYear(), 11, 21) },
+    ];
+
+    for (let i = 0; i < zodiacSigns.length; i++) {
+      const startDate = new Date(
+        date.getFullYear(),
+        i === 0 ? 11 : i - 1,
+        zodiacSigns[i - 1]?.endDate.getDate() + 1 || 22
+      );
+      if (
+        (month === startDate.getMonth() + 1 && day >= startDate.getDate()) ||
+        (month === zodiacSigns[i].endDate.getMonth() + 1 &&
+          day <= zodiacSigns[i].endDate.getDate())
+      ) {
+        return zodiacSigns[i].sign;
+      }
     }
 
-    const jd = calculateJulianDate(user.birthdate, user.birthTime);
-    const natalChart = calculatePlanetaryPositions(jd);
-    const houses = calculateHouses(jd, user.latitude, user.longitude);
-
-    const currentTransits = calculateCurrentTransits();
-    const score = patternMatching(natalChart, currentTransits);
-
-    const astrologicalData = { natalChart, houses, currentTransits, score };
-    const horoscopeText = await generateHoroscopeText(astrologicalData);
-
-    const horoscope = new Horoscope({ userId: user._id, horoscopeText });
-    await horoscope.save();
-
-    res.json({ horoscopeText });
+    // Capricorn (end of year case)
+    return "capricorn";
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error determining Zodiac sign:", error);
+    return null;
   }
 };
 
-exports.getDailyHoroscopes = async (req, res) => {
-  try {
-    const horoscopes = await Horoscope.find().populate("userId");
-    res.json(horoscopes);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+// Controller method to get zodiac sign for authenticated user
+module.exports = {
+  getZodiacSignForUser: async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).select("-password");
+      if (!user) {
+        console.log(`User not found: ${req.user.id}`);
+        return res.status(404).json({ msg: "User not found" });
+      }
+
+      // Determine Zodiac Sign
+      const zodiacSign = getZodiacSign(user.birthdate);
+
+      // Include Zodiac Sign in the response
+      res.json({ zodiacSign });
+    } catch (err) {
+      console.error(`Server Error: ${err.message}`);
+      res.status(500).send("Server Error");
+    }
+  },
 };

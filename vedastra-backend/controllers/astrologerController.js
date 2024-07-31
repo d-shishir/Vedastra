@@ -30,15 +30,11 @@ exports.registerAstrologer = async (req, res) => {
       },
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.json({ token });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -66,15 +62,11 @@ exports.loginAstrologer = async (req, res) => {
       },
     };
 
-    jwt.sign(
-      payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({ token });
-      }
-    );
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.json({ token });
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
@@ -84,9 +76,19 @@ exports.loginAstrologer = async (req, res) => {
 // Get astrologer profile
 exports.getAstrologerProfile = async (req, res) => {
   try {
+    // Ensure req.astrologer is set correctly by middleware
+    if (!req.astrologer || !req.astrologer.id) {
+      return res.status(401).json({ msg: "Unauthorized" });
+    }
+
     const astrologer = await Astrologer.findById(req.astrologer.id).select(
       "-password"
     );
+
+    if (!astrologer) {
+      return res.status(404).json({ msg: "Astrologer not found" });
+    }
+
     res.json(astrologer);
   } catch (err) {
     console.error(err.message);

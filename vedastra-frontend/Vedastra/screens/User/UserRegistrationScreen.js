@@ -12,9 +12,9 @@ import {
   Text,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import axiosInstance from "../api/axiosInstance";
-import { storeToken } from "../utils/tokenStorage";
-import { searchLocation } from "../utils/locationiq"; // Import the LocationIQ utility
+import axiosInstance from "../../api/axiosInstance";
+import { storeToken } from "../../utils/tokenStorage";
+import { searchLocation } from "../../utils/locationiq"; // Import the LocationIQ utility
 import debounce from "lodash/debounce";
 
 const RegisterScreen = ({ navigation }) => {
@@ -41,7 +41,7 @@ const RegisterScreen = ({ navigation }) => {
       combinedBirthdate.setHours(birthtime.getHours());
       combinedBirthdate.setMinutes(birthtime.getMinutes());
 
-      const response = await axiosInstance.post("/users/register", {
+      const response = await axiosInstance.post("/auth/register", {
         name,
         email,
         password,
@@ -127,6 +127,8 @@ const RegisterScreen = ({ navigation }) => {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled" // Ensure taps outside text inputs dismiss keyboard
     >
+      <Text style={styles.header}>Register</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Name (required)"
@@ -138,6 +140,8 @@ const RegisterScreen = ({ navigation }) => {
         placeholder="Email (required)"
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
         style={styles.input}
@@ -146,43 +150,34 @@ const RegisterScreen = ({ navigation }) => {
         value={password}
         onChangeText={setPassword}
       />
-      {Platform.OS === "ios" ? (
-        <View>
-          <Button
-            title="Select Birthdate"
-            onPress={() => setShowDatePicker(true)}
+      <View style={styles.pickerContainer}>
+        <Button
+          title="Select Birthdate"
+          onPress={() => setShowDatePicker(true)}
+        />
+        {showDatePicker && (
+          <DateTimePicker
+            value={birthdate}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
           />
-          {showDatePicker && (
-            <DateTimePicker
-              value={birthdate}
-              mode="datetime"
-              display="default"
-              onChange={handleDateChange}
-            />
-          )}
-        </View>
-      ) : (
-        <View>
-          <Button title="Select Date" onPress={() => setShowDatePicker(true)} />
-          <Button title="Select Time" onPress={() => setShowTimePicker(true)} />
-          {showDatePicker && (
-            <DateTimePicker
-              value={birthdate}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
-            />
-          )}
-          {showTimePicker && (
-            <DateTimePicker
-              value={birthtime}
-              mode="time"
-              display="default"
-              onChange={handleTimeChange}
-            />
-          )}
-        </View>
-      )}
+        )}
+      </View>
+      <View style={styles.pickerContainer}>
+        <Button
+          title="Select Birthtime"
+          onPress={() => setShowTimePicker(true)}
+        />
+        {showTimePicker && (
+          <DateTimePicker
+            value={birthtime}
+            mode="time"
+            display="default"
+            onChange={handleTimeChange}
+          />
+        )}
+      </View>
       <TextInput
         style={styles.input}
         placeholder="Enter Birthplace (required)"
@@ -206,7 +201,7 @@ const RegisterScreen = ({ navigation }) => {
         value={profilePicture}
         onChangeText={setProfilePicture}
       />
-      <Button title="Register" onPress={handleRegister} />
+      <Button title="Register" onPress={handleRegister} color="#007bff" />
     </ScrollView>
   );
 };
@@ -216,11 +211,29 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: 16,
+    backgroundColor: "#f8f9fa",
+  },
+  header: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#343a40",
+    marginBottom: 24,
+    textAlign: "center",
   },
   input: {
-    height: 40,
-    borderColor: "gray",
-    borderBottomWidth: 1,
+    height: 50,
+    borderColor: "#ced4da",
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  pickerContainer: {
     marginBottom: 16,
   },
   locationItem: {

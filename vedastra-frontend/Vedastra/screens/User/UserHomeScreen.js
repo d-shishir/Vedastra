@@ -7,18 +7,28 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axiosInstance from "../api/axiosInstance";
+import axiosInstance from "../../api/axiosInstance";
 
 const HomeScreen = ({ navigation }) => {
   const [horoscopeText, setHoroscopeText] = useState("");
   const [loading, setLoading] = useState(true);
 
-  // Fetch today's horoscope
+  // Function to fetch today's zodiac sign and horoscope
   const fetchHoroscope = async () => {
     try {
-      const response = await axiosInstance.get("/dailyHoroscopes");
-      setHoroscopeText(response.data[0].horoscopeText); // Accessing the first element's horoscopeText
-      console.log(response.data);
+      // Step 1: Fetch the zodiac sign from your API
+      const zodiacResponse = await axiosInstance.get("/dailyHoroscopes");
+      const zodiacSign = zodiacResponse.data.zodiacSign;
+
+      // Step 2: Fetch the horoscope text from the external API using the zodiac sign
+      if (zodiacSign) {
+        const horoscopeResponse = await axiosInstance.get(
+          `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${zodiacSign}&day=TODAY`
+        );
+        setHoroscopeText(horoscopeResponse.data.data.horoscope_data);
+      } else {
+        setHoroscopeText("No zodiac sign found.");
+      }
     } catch (error) {
       console.error("Fetch error:", error);
       setHoroscopeText("Failed to fetch today's horoscope");
@@ -36,7 +46,7 @@ const HomeScreen = ({ navigation }) => {
     try {
       // Clear authentication token from AsyncStorage or secure storage
       await AsyncStorage.removeItem("token");
-      navigation.navigate("Login"); // Navigate back to Login screen
+      navigation.navigate("UserLogin"); // Navigate back to Login screen
     } catch (error) {
       console.error("Logout error:", error);
     }
