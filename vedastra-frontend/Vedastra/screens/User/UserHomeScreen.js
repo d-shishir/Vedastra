@@ -97,6 +97,12 @@ const HomeScreen = ({ navigation }) => {
         keyExtractor={(item) => item._id.toString()}
         contentContainerStyle={styles.astrologerList}
       />
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("ConsultationStatus")}
+      >
+        <Text style={styles.buttonText}>View My Consultations</Text>
+      </TouchableOpacity>
       <Button title="Logout" onPress={handleLogout} />
     </View>
   );
@@ -136,6 +142,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#007bff",
     borderRadius: 5,
     alignItems: "center",
+  },
+  button: {
+    backgroundColor: "#007bff",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 16,
+    color: "#ffffff",
+    fontWeight: "500",
   },
   bookButtonText: {
     color: "#ffffff",

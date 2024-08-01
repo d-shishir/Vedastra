@@ -113,6 +113,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>Upcoming Consultations</Text>
         </TouchableOpacity>
 
+
         <TouchableOpacity
           style={[styles.button, styles.logoutButton]}
           onPress={handleLogout}

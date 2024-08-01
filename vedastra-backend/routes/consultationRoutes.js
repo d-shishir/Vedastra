@@ -3,6 +3,7 @@ const {
   scheduleConsultation,
   getConsultations,
   updateConsultationStatus,
+  getPendingConsultations,
 } = require("../controllers/consultationController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -16,5 +17,8 @@ router.get("/", authMiddleware, getConsultations);
 
 // Route to update consultation status
 router.patch("/status", authMiddleware, updateConsultationStatus);
+
+// Route to get pending consultations
+router.get("/pending", authMiddleware, getPendingConsultations);
 
 module.exports = router;

@@ -10,7 +10,7 @@ const ConsultationSchema = new mongoose.Schema({
   scheduledAt: { type: Date, required: true },
   status: {
     type: String,
-    enum: ["scheduled", "completed", "canceled"],
+    enum: ["scheduled", "completed", "canceled", "live"],
     default: "scheduled",
   },
   communicationType: { type: String, enum: ["chat", "video"], required: true },
