@@ -50,38 +50,53 @@ const AstrologerHomeScreen = ({ navigation }) => {
     );
   }
 
+  if (!profile) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.header}>No profile data available.</Text>
+      </View>
+    );
+  }
+
+  // Destructure and provide default values
+  const {
+    name,
+    email,
+    specializations = [],
+    availability = {},
+    ratings = {},
+  } = profile;
+  const days = availability.days || [];
+  const timeSlots = availability.timeSlots || [];
+  const averageRating = ratings.average || "N/A";
+  const reviewsCount = ratings.reviewsCount || "N/A";
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
-        <Text style={styles.header}>Welcome, {profile.name}</Text>
+        <Text style={styles.header}>Welcome, {name}</Text>
 
         <View style={styles.profileSection}>
           <Text style={styles.sectionTitle}>Profile Details</Text>
-          <Text style={styles.detailText}>Name: {profile.name}</Text>
-          <Text style={styles.detailText}>Email: {profile.email}</Text>
+          <Text style={styles.detailText}>Name: {name}</Text>
+          <Text style={styles.detailText}>Email: {email}</Text>
           <Text style={styles.detailText}>
-            Specializations: {profile.specializations.join(", ")}
+            Specializations: {specializations.join(", ")}
           </Text>
         </View>
 
         <View style={styles.profileSection}>
           <Text style={styles.sectionTitle}>Availability</Text>
+          <Text style={styles.detailText}>Days: {days.join(", ")}</Text>
           <Text style={styles.detailText}>
-            Days: {profile.availability.days.join(", ")}
-          </Text>
-          <Text style={styles.detailText}>
-            Time Slots: {profile.availability.timeSlots.join(", ")}
+            Time Slots: {timeSlots.join(", ")}
           </Text>
         </View>
 
         <View style={styles.profileSection}>
           <Text style={styles.sectionTitle}>Ratings</Text>
-          <Text style={styles.detailText}>
-            Average Rating: {profile.ratings.average}
-          </Text>
-          <Text style={styles.detailText}>
-            Reviews Count: {profile.ratings.reviewsCount}
-          </Text>
+          <Text style={styles.detailText}>Average Rating: {averageRating}</Text>
+          <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
         </View>
 
         <TouchableOpacity

@@ -5,9 +5,12 @@ import OnboardingScreen from "../screens/OnboardingScreen";
 import UserLoginScreen from "../screens/User/UserLoginScreen";
 import UserRegisterScreen from "../screens/User/UserRegistrationScreen";
 import UserHomeScreen from "../screens/User/UserHomeScreen";
+import BookingScreen from "../screens/User/BookingScreen";
+
 import AstrologerLoginScreen from "../screens/Astrologer/AstrologerLoginScreen";
 import AstrologerRegisterScreen from "../screens/Astrologer/AstrologerRegistrationScreen";
 import AstrologerHomeScreen from "../screens/Astrologer/AstrologerHomeScreen";
+import ManageAvailabilityScreen from "../screens/Astrologer/ManageAvailabilityScreen";
 
 const Stack = createStackNavigator();
 
@@ -17,6 +20,7 @@ const UserStackNavigator = () => {
       <Stack.Screen name="UserLogin" component={UserLoginScreen} />
       <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
       <Stack.Screen name="UserHome" component={UserHomeScreen} />
+      <Stack.Screen name="BookingScreen" component={BookingScreen} />
     </Stack.Navigator>
   );
 };
@@ -30,6 +34,10 @@ const AstrologerStackNavigator = () => {
         component={AstrologerRegisterScreen}
       />
       <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />
+      <Stack.Screen
+        name="ManageAvailability"
+        component={ManageAvailabilityScreen}
+      />
     </Stack.Navigator>
   );
 };

@@ -18,4 +18,21 @@ router.post("/login", astrologerController.loginAstrologer);
 // @access  Private
 router.get("/me", authMiddleware, astrologerController.getAstrologerProfile);
 
+// @route   GET api/astrologers
+// @desc    Get all astrologers
+// @access  Public
+router.get("/", astrologerController.getAllAstrologers);
+
+// @route   GET api/astrologers/:id
+// @desc    Get astrologer by ID
+// @access  Public
+router.get("/:id", astrologerController.getAstrologerById);
+
+// Route to update availability
+router.patch(
+  "/me/availability",
+  authMiddleware,
+  astrologerController.updateAstrologerAvailability
+);
+
 module.exports = router;

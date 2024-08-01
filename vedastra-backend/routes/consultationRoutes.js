@@ -1,29 +1,20 @@
 const express = require("express");
-const router = express.Router();
-const consultationController = require("../controllers/consultationController");
+const {
+  scheduleConsultation,
+  getConsultations,
+  updateConsultationStatus,
+} = require("../controllers/consultationController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
-// @route   POST api/consultations
-// @desc    Schedule a consultation
-// @access  Private
-router.post("/", authMiddleware, consultationController.scheduleConsultation);
+const router = express.Router();
 
-// @route   GET api/consultations/user
-// @desc    Get consultations for a user
-// @access  Private
-router.get(
-  "/user",
-  authMiddleware,
-  consultationController.getUserConsultations
-);
+// Route to schedule a new consultation
+router.post("/schedule", authMiddleware, scheduleConsultation);
 
-// @route   GET api/consultations/astrologer
-// @desc    Get consultations for an astrologer
-// @access  Private
-router.get(
-  "/astrologer",
-  authMiddleware,
-  consultationController.getAstrologerConsultations
-);
+// Route to get consultations for a user or astrologer
+router.get("/", authMiddleware, getConsultations);
+
+// Route to update consultation status
+router.patch("/status", authMiddleware, updateConsultationStatus);
 
 module.exports = router;

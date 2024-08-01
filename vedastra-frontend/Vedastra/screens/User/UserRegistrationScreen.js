@@ -58,7 +58,7 @@ const RegisterScreen = ({ navigation }) => {
       await storeToken(response.data.token);
 
       Alert.alert("Success", "Registered successfully!");
-      navigation.navigate("Home");
+      navigation.navigate("UserHome");
     } catch (error) {
       console.error("Registration error:", error);
       if (error.response) {

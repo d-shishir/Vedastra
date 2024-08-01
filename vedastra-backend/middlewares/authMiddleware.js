@@ -19,6 +19,7 @@ const authMiddleware = (req, res, next) => {
     } else if (decoded.astrologer) {
       req.astrologer = decoded.astrologer;
     } else {
+      console.error("Invalid token payload:", decoded);
       return res.status(401).json({ msg: "Invalid token payload" });
     }
 
@@ -26,8 +27,16 @@ const authMiddleware = (req, res, next) => {
     next();
   } catch (err) {
     // Handle any errors during token verification
-    console.error("Token verification error:", err);
-    res.status(401).json({ msg: "Token is not valid" });
+    console.error("Token verification error:", err.message);
+
+    // Send a different response based on the type of error
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ msg: "Token expired" });
+    } else if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ msg: "Token is not valid" });
+    } else {
+      return res.status(500).json({ msg: "Internal server error" });
+    }
   }
 };
 
