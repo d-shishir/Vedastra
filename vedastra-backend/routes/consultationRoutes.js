@@ -3,6 +3,7 @@ const {
   getConsultations,
   updateConsultationStatus,
   getLiveConsultations,
+  startConsultation, // Add this
 } = require("../controllers/consultationController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -15,6 +16,9 @@ router.get("/", authMiddleware, getConsultations);
 router.patch("/:id/status", authMiddleware, updateConsultationStatus);
 
 // Route to get live consultations
-router.get("/live", authMiddleware, getLiveConsultations); // Make sure this is defined
+router.get("/live", authMiddleware, getLiveConsultations);
+
+// Route to start a consultation
+router.post("/:id/start", authMiddleware, startConsultation); // Ensure this is the correct path
 
 module.exports = router;

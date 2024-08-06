@@ -32,8 +32,8 @@ const HomeScreen = ({ navigation }) => {
         setHoroscopeText("No zodiac sign found.");
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      setHoroscopeText("Failed to fetch today's horoscope");
+      console.error("Fetch horoscope error:", error);
+      setHoroscopeText("Failed to fetch today's horoscope.");
     } finally {
       setLoading(false);
     }
@@ -53,24 +53,26 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Function to start a consultation
   const startConsultation = async (astrologerId) => {
     try {
       const token = await AsyncStorage.getItem("token");
+      if (!astrologerId) {
+        throw new Error("Astrologer ID is missing");
+      }
+
       const response = await axiosInstance.post(
-        "/consultations",
-        {
-          astrologerId,
-          communicationType: "chat", // Assuming chat for now
-        },
+        `/consultations/${astrologerId}/start`,
+        { communicationType: "chat" }, // Ensure this matches what the backend expects
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      const consultationId = response.data._id;
 
-      // Navigate to the chat screen with consultation ID
+      const consultationId = response.data._id;
       navigation.navigate("ChatScreen", { consultationId });
     } catch (error) {
-      console.error("Start consultation error:", error);
+      console.error(
+        "Start consultation error:",
+        error.response ? error.response.data : error.message
+      );
       setError("Failed to start the consultation.");
     }
   };
@@ -112,7 +114,7 @@ const HomeScreen = ({ navigation }) => {
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
-        <Text>{horoscopeText}</Text>
+        <Text style={styles.horoscopeText}>{horoscopeText}</Text>
       )}
       <Text style={styles.header}>Available Astrologers</Text>
       {error ? (
@@ -133,7 +135,7 @@ const HomeScreen = ({ navigation }) => {
       >
         <Text style={styles.buttonText}>View My Consultations</Text>
       </TouchableOpacity>
-      <Button title="Logout" onPress={handleLogout} />
+      <Button title="Logout" onPress={handleLogout} color="#007bff" />
     </View>
   );
 };
@@ -149,6 +151,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: "bold",
     color: "#343a40",
+  },
+  horoscopeText: {
+    fontSize: 16,
+    color: "#495057",
+    marginBottom: 20,
   },
   astrologerList: {
     marginTop: 20,
@@ -173,22 +180,22 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
   },
+  chatButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+  },
   button: {
     backgroundColor: "#007bff",
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    marginBottom: 12,
+    marginVertical: 12,
     alignItems: "center",
   },
   buttonText: {
     fontSize: 16,
     color: "#ffffff",
     fontWeight: "500",
-  },
-  chatButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
   },
   errorText: {
     color: "#dc3545",

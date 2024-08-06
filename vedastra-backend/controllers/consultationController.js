@@ -1,4 +1,4 @@
-const ConsultationModel = require("../models/Consultation");
+const Consultation = require("../models/Consultation"); // Adjust the path as needed
 
 // Get consultations for a user or astrologer
 const getConsultations = async (req, res) => {
@@ -55,8 +55,29 @@ const getLiveConsultations = async (req, res) => {
   }
 };
 
+// Function to start a consultation
+const startConsultation = async (req, res) => {
+  try {
+    const { astrologerId, communicationType } = req.body; // Extract required fields from request body
+    const userId = req.user.id; // Assuming user ID is available in req.user
+
+    // Check if both required fields are provided
+    if (!astrologerId || !communicationType) {
+      return res
+        .status(400)
+        .json({ message: "astrologerId and communicationType are required" });
+    }
+
+    // Proceed with your logic to start the consultation
+  } catch (error) {
+    console.error("Error starting consultation:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getConsultations,
   updateConsultationStatus,
   getLiveConsultations,
+  startConsultation,
 };
