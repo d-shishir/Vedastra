@@ -1,44 +1,72 @@
-const ChatModel = require("../models/ChatModel");
-const { encryptMessage, decryptMessage } = require("../utils/encryption");
+const ChatModel = require("../models/Chat");
 
-// Save a new message
-const saveMessage = async (req, res) => {
+// Get chat messages for a consultation
+const getChatMessages = async (req, res) => {
   try {
-    const { message, recipientId } = req.body;
-    const encryptedMessage = encryptMessage(message);
+    const { consultationId } = req.params;
 
-    const newMessage = new ChatModel({
-      senderId: req.user.id,
-      recipientId,
-      message: encryptedMessage.content,
-      iv: encryptedMessage.iv,
-      timestamp: Date.now(),
-    });
+    const chat = await ChatModel.findOne({ consultationId });
+    if (!chat) {
+      return res.status(404).send("Chat not found");
+    }
 
-    await newMessage.save();
-    res.status(200).send("Message saved successfully");
+    res.status(200).json(chat.messages);
   } catch (error) {
-    console.error("Error saving message:", error);
-    res.status(500).send("Error saving message");
+    console.error("Error fetching chat messages:", error);
+    res.status(500).send("Error fetching chat messages");
   }
 };
 
-// Get messages between two users
-const getMessages = async (req, res) => {
+// Send a new message in a chat
+const sendMessage = async (req, res) => {
   try {
-    const { chatId } = req.params;
-    const messages = await ChatModel.find({ chatId });
+    const { consultationId } = req.params;
+    const { message } = req.body;
+    const senderId = req.user._id; // Assuming user is attached to req by auth middleware
+    const receiverId = req.body.receiverId;
 
-    const decryptedMessages = messages.map((msg) => ({
-      ...msg._doc,
-      message: decryptMessage({ content: msg.message, iv: msg.iv }),
-    }));
+    if (!message || !receiverId) {
+      return res
+        .status(400)
+        .json({ msg: "Message and receiverId are required" });
+    }
 
-    res.status(200).json(decryptedMessages);
+    const chat = await ChatModel.findOneAndUpdate(
+      { consultationId },
+      { $push: { messages: { senderId, receiverId, message } } },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json(chat.messages);
   } catch (error) {
-    console.error("Error retrieving messages:", error);
-    res.status(500).send("Error retrieving messages");
+    console.error("Error sending message:", error);
+    res.status(500).send("Error sending message");
   }
 };
 
-module.exports = { saveMessage, getMessages };
+// Start a chat (initialize or create if it doesn't exist)
+const startChat = async (req, res) => {
+  try {
+    const { consultationId } = req.params;
+
+    // Check if the chat already exists
+    let chat = await ChatModel.findOne({ consultationId });
+
+    if (!chat) {
+      // Create a new chat if it doesn't exist
+      chat = new ChatModel({ consultationId, messages: [] });
+      await chat.save();
+    }
+
+    res.status(200).json(chat);
+  } catch (error) {
+    console.error("Error starting chat:", error);
+    res.status(500).send("Error starting chat");
+  }
+};
+
+module.exports = {
+  getChatMessages,
+  sendMessage,
+  startChat,
+};

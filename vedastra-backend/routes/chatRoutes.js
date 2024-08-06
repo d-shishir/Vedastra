@@ -1,13 +1,20 @@
 const express = require("express");
-const { saveMessage, getMessages } = require("../controllers/chatController");
-const { authenticateUser } = require("../middlewares/authMiddleware");
+const {
+  getChatMessages,
+  sendMessage,
+  startChat,
+} = require("../controllers/chatController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Route to save a new chat message
-router.post("/messages", authenticateUser, saveMessage);
+// Route to get messages for a chat
+router.get("/:consultationId/messages", authMiddleware, getChatMessages);
 
-// Route to get chat messages by chat ID
-router.get("/messages/:chatId", authenticateUser, getMessages);
+// Route to send a new message
+router.post("/:consultationId/messages", authMiddleware, sendMessage);
+
+// Route to start a chat (initialize chat or create if it doesn't exist)
+router.post("/:consultationId/start", authMiddleware, startChat);
 
 module.exports = router;

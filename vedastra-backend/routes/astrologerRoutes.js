@@ -2,11 +2,16 @@ const express = require("express");
 const router = express.Router();
 const astrologerController = require("../controllers/astrologerController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const { uploadDocument } = require("../middlewares/uploadMiddleware"); // Import file upload middleware
 
 // @route   POST api/astrologers/register
 // @desc    Register astrologer
 // @access  Public
-router.post("/register", astrologerController.registerAstrologer);
+router.post(
+  "/register",
+  uploadDocument,
+  astrologerController.registerAstrologer
+);
 
 // @route   POST api/astrologers/login
 // @desc    Login astrologer
@@ -19,7 +24,7 @@ router.post("/login", astrologerController.loginAstrologer);
 router.get("/me", authMiddleware, astrologerController.getAstrologerProfile);
 
 // @route   GET api/astrologers
-// @desc    Get all astrologers
+// @desc    Get all astrologers or filter by availability
 // @access  Public
 router.get("/", astrologerController.getAllAstrologers);
 
@@ -28,11 +33,22 @@ router.get("/", astrologerController.getAllAstrologers);
 // @access  Public
 router.get("/:id", astrologerController.getAstrologerById);
 
-// Route to update availability
+// @route   PATCH api/astrologers/me/availability
+// @desc    Update astrologer availability status
+// @access  Private
 router.patch(
   "/me/availability",
   authMiddleware,
-  astrologerController.updateAstrologerAvailability
+  astrologerController.updateAvailability
+);
+
+// @route   PATCH api/astrologers/me/verification
+// @desc    Update astrologer verification status
+// @access  Private
+router.patch(
+  "/me/verification",
+  authMiddleware,
+  astrologerController.updateVerificationStatus
 );
 
 module.exports = router;

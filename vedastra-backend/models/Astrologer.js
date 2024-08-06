@@ -2,17 +2,41 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const AstrologerSchema = new Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
   specializations: [String],
-  availability: {
-    days: [{ type: String, required: true }], // Ensure days are required
-    timeSlots: [{ type: String, required: true }], // Ensure timeSlots are required
+  isAvailable: {
+    type: Boolean,
+    default: false,
   },
   ratings: {
-    average: { type: Number, default: 0 },
-    reviewsCount: { type: Number, default: 0 },
+    average: {
+      type: Number,
+      default: 0,
+    },
+    reviewsCount: {
+      type: Number,
+      default: 0,
+    },
+  },
+  document: {
+    type: String, // Add this field to store the path of the uploaded document
+    default: null,
+  },
+  verified: {
+    type: Boolean,
+    default: false, // Default to false until verified
   },
 });
 

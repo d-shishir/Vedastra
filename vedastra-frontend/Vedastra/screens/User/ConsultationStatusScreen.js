@@ -55,14 +55,9 @@ const ConsultationStatusScreen = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       await axiosInstance.patch(
-        "/consultations/status",
-        {
-          consultationId,
-          status: "canceled",
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `/consultations/${consultationId}/status`, // Include the consultation ID in the URL
+        { status: "canceled" }, // Send only the status in the request body
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchConsultations(); // Refresh the list after cancelling
     } catch (error) {

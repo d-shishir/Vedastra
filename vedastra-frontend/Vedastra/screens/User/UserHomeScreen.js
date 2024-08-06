@@ -15,15 +15,14 @@ const HomeScreen = ({ navigation }) => {
   const [horoscopeText, setHoroscopeText] = useState("");
   const [loading, setLoading] = useState(true);
   const [astrologers, setAstrologers] = useState([]);
+  const [error, setError] = useState(null);
 
   // Function to fetch today's zodiac sign and horoscope
   const fetchHoroscope = async () => {
     try {
-      // Step 1: Fetch the zodiac sign from your API
       const zodiacResponse = await axiosInstance.get("/dailyHoroscopes");
       const zodiacSign = zodiacResponse.data.zodiacSign;
 
-      // Step 2: Fetch the horoscope text from the external API using the zodiac sign
       if (zodiacSign) {
         const horoscopeResponse = await axiosInstance.get(
           `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily?sign=${zodiacSign}&day=TODAY`
@@ -40,13 +39,39 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Function to fetch the list of astrologers
+  // Function to fetch the list of available astrologers
   const fetchAstrologers = async () => {
     try {
       const response = await axiosInstance.get("/astrologers");
-      setAstrologers(response.data);
+      const availableAstrologers = response.data.filter(
+        (astrologer) => astrologer.isAvailable
+      );
+      setAstrologers(availableAstrologers);
     } catch (error) {
       console.error("Fetch astrologers error:", error);
+      setError("Error fetching astrologers.");
+    }
+  };
+
+  // Function to start a consultation
+  const startConsultation = async (astrologerId) => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await axiosInstance.post(
+        "/consultations",
+        {
+          astrologerId,
+          communicationType: "chat", // Assuming chat for now
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const consultationId = response.data._id;
+
+      // Navigate to the chat screen with consultation ID
+      navigation.navigate("ChatScreen", { consultationId });
+    } catch (error) {
+      console.error("Start consultation error:", error);
+      setError("Failed to start the consultation.");
     }
   };
 
@@ -62,6 +87,7 @@ const HomeScreen = ({ navigation }) => {
       navigation.navigate("UserLogin");
     } catch (error) {
       console.error("Logout error:", error);
+      setError("Failed to log out.");
     }
   };
 
@@ -71,12 +97,10 @@ const HomeScreen = ({ navigation }) => {
       <Text style={styles.astrologerName}>{item.name}</Text>
       <Text>Specializations: {item.specializations.join(", ")}</Text>
       <TouchableOpacity
-        style={styles.bookButton}
-        onPress={() =>
-          navigation.navigate("BookingScreen", { astrologerId: item._id })
-        }
+        style={styles.chatButton}
+        onPress={() => startConsultation(item._id)}
       >
-        <Text style={styles.bookButtonText}>Book Consultation</Text>
+        <Text style={styles.chatButtonText}>Let's Chat</Text>
       </TouchableOpacity>
     </View>
   );
@@ -91,12 +115,18 @@ const HomeScreen = ({ navigation }) => {
         <Text>{horoscopeText}</Text>
       )}
       <Text style={styles.header}>Available Astrologers</Text>
-      <FlatList
-        data={astrologers}
-        renderItem={renderAstrologerItem}
-        keyExtractor={(item) => item._id.toString()}
-        contentContainerStyle={styles.astrologerList}
-      />
+      {error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : astrologers.length === 0 ? (
+        <Text>No astrologers available</Text>
+      ) : (
+        <FlatList
+          data={astrologers}
+          renderItem={renderAstrologerItem}
+          keyExtractor={(item) => item._id.toString()}
+          contentContainerStyle={styles.astrologerList}
+        />
+      )}
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ConsultationStatus")}
@@ -136,7 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 8,
   },
-  bookButton: {
+  chatButton: {
     marginTop: 10,
     padding: 10,
     backgroundColor: "#007bff",
@@ -156,9 +186,14 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "500",
   },
-  bookButtonText: {
+  chatButtonText: {
     color: "#ffffff",
     fontSize: 16,
+  },
+  errorText: {
+    color: "#dc3545",
+    fontSize: 16,
+    marginTop: 10,
   },
 });
 

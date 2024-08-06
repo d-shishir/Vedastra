@@ -12,7 +12,6 @@ import ConsultationStatusScreen from "../screens/User/ConsultationStatusScreen";
 import AstrologerLoginScreen from "../screens/Astrologer/AstrologerLoginScreen";
 import AstrologerRegisterScreen from "../screens/Astrologer/AstrologerRegistrationScreen";
 import AstrologerHomeScreen from "../screens/Astrologer/AstrologerHomeScreen";
-import ManageAvailabilityScreen from "../screens/Astrologer/ManageAvailabilityScreen";
 import AstrologerConsultationScreen from "../screens/Astrologer/AstrologerConsultationScreen";
 
 const Stack = createStackNavigator();
@@ -41,10 +40,7 @@ const AstrologerStackNavigator = () => {
         component={AstrologerRegisterScreen}
       />
       <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />
-      <Stack.Screen
-        name="ManageAvailability"
-        component={ManageAvailabilityScreen}
-      />
+
       <Stack.Screen
         name="UpcomingConsultations"
         component={AstrologerConsultationScreen}

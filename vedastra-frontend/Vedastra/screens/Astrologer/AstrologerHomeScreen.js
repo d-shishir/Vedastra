@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   ActivityIndicator,
   ScrollView,
   TouchableOpacity,
+  Switch,
+  FlatList,
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import { removeToken } from "../../utils/tokenStorage";
@@ -14,16 +15,29 @@ import { removeToken } from "../../utils/tokenStorage";
 const AstrologerHomeScreen = ({ navigation }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [liveConsultations, setLiveConsultations] = useState([]);
 
   // Fetch astrologer profile
   const fetchProfile = async () => {
     try {
       const response = await axiosInstance.get("/astrologers/me");
       setProfile(response.data);
+      setIsAvailable(response.data.isAvailable); // Set availability state from profile data
     } catch (error) {
       console.error("Fetch profile error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch live consultations
+  const fetchLiveConsultations = async () => {
+    try {
+      const response = await axiosInstance.get("/consultations/live");
+      setLiveConsultations(response.data);
+    } catch (error) {
+      console.error("Fetch live consultations error:", error);
     }
   };
 
@@ -37,8 +51,21 @@ const AstrologerHomeScreen = ({ navigation }) => {
     }
   };
 
+  // Handle availability toggle
+  const handleToggleAvailability = async () => {
+    try {
+      await axiosInstance.patch("/astrologers/me/availability", {
+        isAvailable: !isAvailable,
+      });
+      setIsAvailable(!isAvailable); // Update local state
+    } catch (error) {
+      console.error("Error updating availability:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProfile();
+    fetchLiveConsultations();
   }, []);
 
   if (loading) {
@@ -71,6 +98,20 @@ const AstrologerHomeScreen = ({ navigation }) => {
   const averageRating = ratings.average || "N/A";
   const reviewsCount = ratings.reviewsCount || "N/A";
 
+  const renderConsultationItem = ({ item }) => (
+    <View style={styles.consultationItem}>
+      <Text style={styles.consultationText}>Consultation ID: {item._id}</Text>
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() =>
+          navigation.navigate("ChatScreen", { consultationId: item._id })
+        }
+      >
+        <Text style={styles.chatButtonText}>Go to Chat</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
@@ -87,10 +128,17 @@ const AstrologerHomeScreen = ({ navigation }) => {
 
         <View style={styles.profileSection}>
           <Text style={styles.sectionTitle}>Availability</Text>
-          <Text style={styles.detailText}>Days: {days.join(", ")}</Text>
+          {/* <Text style={styles.detailText}>Days: {days.join(", ")}</Text>
           <Text style={styles.detailText}>
             Time Slots: {timeSlots.join(", ")}
-          </Text>
+          </Text> */}
+          <View style={styles.toggleContainer}>
+            <Text style={styles.detailText}>Available for consultations:</Text>
+            <Switch
+              value={isAvailable}
+              onValueChange={handleToggleAvailability}
+            />
+          </View>
         </View>
 
         <View style={styles.profileSection}>
@@ -99,12 +147,19 @@ const AstrologerHomeScreen = ({ navigation }) => {
           <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("ManageAvailability")}
-        >
-          <Text style={styles.buttonText}>Manage Availability</Text>
-        </TouchableOpacity>
+        <View style={styles.profileSection}>
+          <Text style={styles.sectionTitle}>Live Consultations</Text>
+          {liveConsultations.length === 0 ? (
+            <Text>No live consultations at the moment.</Text>
+          ) : (
+            <FlatList
+              data={liveConsultations}
+              renderItem={renderConsultationItem}
+              keyExtractor={(item) => item._id.toString()}
+              contentContainerStyle={styles.consultationList}
+            />
+          )}
+        </View>
 
         <TouchableOpacity
           style={styles.button}
@@ -112,7 +167,6 @@ const AstrologerHomeScreen = ({ navigation }) => {
         >
           <Text style={styles.buttonText}>Upcoming Consultations</Text>
         </TouchableOpacity>
-
 
         <TouchableOpacity
           style={[styles.button, styles.logoutButton]}
@@ -192,6 +246,38 @@ const styles = StyleSheet.create({
   },
   logoutButtonText: {
     color: "#ffffff",
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 8,
+  },
+  consultationList: {
+    marginTop: 10,
+  },
+  consultationItem: {
+    padding: 16,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ced4da",
+    marginBottom: 10,
+  },
+  consultationText: {
+    fontSize: 16,
+    color: "#495057",
+    marginBottom: 8,
+  },
+  chatButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  chatButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
   },
 });
 

@@ -1,42 +1,15 @@
 const ConsultationModel = require("../models/Consultation");
 
-// Schedule a new consultation
-const scheduleConsultation = async (req, res) => {
-  try {
-    const { astrologerId, scheduledAt, communicationType } = req.body;
-
-    const newConsultation = new ConsultationModel({
-      userId: req.user.id,
-      astrologerId,
-      scheduledAt,
-      communicationType,
-      status: "scheduled",
-    });
-
-    await newConsultation.save();
-    res.status(200).json({
-      message: "Consultation scheduled successfully",
-      consultation: newConsultation,
-    });
-  } catch (error) {
-    console.error("Error scheduling consultation:", error);
-    res.status(500).send("Error scheduling consultation");
-  }
-};
-
 // Get consultations for a user or astrologer
 const getConsultations = async (req, res) => {
   try {
     const { userId, astrologerId } = req.query;
-
     const query = {};
     if (userId) query.userId = userId;
     if (astrologerId) query.astrologerId = astrologerId;
-
     const consultations = await ConsultationModel.find(query).populate(
       "userId astrologerId"
     );
-
     res.status(200).json(consultations);
   } catch (error) {
     console.error("Error fetching consultations:", error);
@@ -44,44 +17,46 @@ const getConsultations = async (req, res) => {
   }
 };
 
-// Update consultation status (e.g., completed, canceled)
-const updateLiveConsultations = async () => {
-  const now = new Date();
+// Update consultation status (e.g., completed, live)
+const updateConsultationStatus = async (req, res) => {
   try {
-    const liveConsultations = await ConsultationModel.updateMany(
-      {
-        scheduledAt: { $lte: now },
-        status: "scheduled",
-      },
-      { $set: { status: "live" } }
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!["completed", "live"].includes(status)) {
+      return res.status(400).json({ msg: "Invalid status" });
+    }
+    const updatedConsultation = await ConsultationModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
     );
-    console.log(`${liveConsultations.nModified} consultations set to live.`);
+    if (!updatedConsultation) {
+      return res.status(404).send("Consultation not found");
+    }
+    res.status(200).json(updatedConsultation);
   } catch (error) {
-    console.error("Error updating live consultations:", error);
+    console.error("Error updating consultation status:", error);
+    res.status(500).send("Error updating consultation status");
   }
 };
 
-// Get pending consultations
-const getPendingConsultations = async (req, res) => {
+// Get live consultations
+const getLiveConsultations = async (req, res) => {
   try {
-    const { astrologerId } = req.query;
-    const query = { status: "pending" };
-    if (astrologerId) query.astrologerId = astrologerId;
-
-    const consultations = await ConsultationModel.find(query).populate(
-      "userId astrologerId"
-    );
-
-    res.status(200).json(consultations);
+    const now = new Date();
+    const liveConsultations = await ConsultationModel.find({
+      scheduledAt: { $lte: now },
+      status: "live",
+    }).populate("userId astrologerId");
+    res.status(200).json(liveConsultations);
   } catch (error) {
-    console.error("Error fetching pending consultations:", error);
-    res.status(500).send("Error fetching pending consultations");
+    console.error("Error fetching live consultations:", error);
+    res.status(500).send("Error fetching live consultations");
   }
 };
 
 module.exports = {
-  scheduleConsultation,
   getConsultations,
   updateConsultationStatus,
-  getPendingConsultations,
+  getLiveConsultations,
 };

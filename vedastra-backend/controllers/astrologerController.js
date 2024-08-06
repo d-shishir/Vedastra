@@ -1,12 +1,14 @@
 const Astrologer = require("../models/Astrologer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { uploadDocument } = require("../middlewares/uploadMiddleware"); // Middleware to handle file uploads
 
 // Astrologer registration
 exports.registerAstrologer = async (req, res) => {
-  const { name, email, password, specializations, availability } = req.body;
+  const { name, email, password, specializations } = req.body;
+  const document = req.file ? req.file.path : null; // Assuming `uploadDocument` middleware sets `req.file`
 
-  if (!name || !email || !password || !specializations || !availability) {
+  if (!name || !email || !password || !specializations) {
     return res.status(400).json({ msg: "Please enter all fields" });
   }
 
@@ -21,7 +23,8 @@ exports.registerAstrologer = async (req, res) => {
       email,
       password,
       specializations,
-      availability,
+      document, // Include the document path
+      verified: false, // Set default to false until verified
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -133,41 +136,56 @@ exports.getAstrologerById = async (req, res) => {
   }
 };
 
-// Update astrologer availability
-exports.updateAstrologerAvailability = async (req, res) => {
-  const { days, timeSlots } = req.body;
-
+// Update availability
+exports.updateAvailability = async (req, res) => {
   try {
-    if (!req.astrologer || !req.astrologer.id) {
-      return res.status(401).json({ msg: "Unauthorized" });
+    const astrologerId = req.astrologer.id; // Use req.astrologer.id instead of req.user._id
+    const { isAvailable } = req.body;
+
+    if (typeof isAvailable !== "boolean") {
+      return res.status(400).json({ msg: "Invalid availability status" });
     }
 
-    const astrologer = await Astrologer.findById(req.astrologer.id);
+    const updatedAstrologer = await Astrologer.findByIdAndUpdate(
+      astrologerId,
+      { isAvailable },
+      { new: true }
+    );
 
-    if (!astrologer) {
-      return res.status(404).json({ msg: "Astrologer not found" });
+    if (!updatedAstrologer) {
+      return res.status(404).send("Astrologer not found");
     }
 
-    if (!Array.isArray(days) || !Array.isArray(timeSlots)) {
-      return res.status(400).json({ msg: "Days and timeSlots must be arrays" });
+    res.status(200).json(updatedAstrologer);
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    res.status(500).send("Error updating availability");
+  }
+};
+
+// Update verification status
+exports.updateVerificationStatus = async (req, res) => {
+  try {
+    const astrologerId = req.user.id; // Assuming astrologer is logged in and authenticated
+    const { verified } = req.body;
+
+    if (typeof verified !== "boolean") {
+      return res.status(400).json({ msg: "Invalid verification status" });
     }
 
-    if (days.length === 0 || timeSlots.length === 0) {
-      return res
-        .status(400)
-        .json({ msg: "Days and timeSlots cannot be empty" });
+    const updatedAstrologer = await Astrologer.findByIdAndUpdate(
+      astrologerId,
+      { verified },
+      { new: true }
+    );
+
+    if (!updatedAstrologer) {
+      return res.status(404).send("Astrologer not found");
     }
 
-    astrologer.availability = {
-      days: days,
-      timeSlots: timeSlots,
-    };
-
-    await astrologer.save();
-
-    res.json({ msg: "Availability updated successfully", astrologer });
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server Error");
+    res.status(200).json(updatedAstrologer);
+  } catch (error) {
+    console.error("Error updating verification status:", error);
+    res.status(500).send("Error updating verification status");
   }
 };
