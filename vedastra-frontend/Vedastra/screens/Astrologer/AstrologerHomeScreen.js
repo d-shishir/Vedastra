@@ -4,10 +4,9 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Switch,
-  FlatList,
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import { removeToken } from "../../utils/tokenStorage";
@@ -18,12 +17,11 @@ const AstrologerHomeScreen = ({ navigation }) => {
   const [isAvailable, setIsAvailable] = useState(false);
   const [liveConsultations, setLiveConsultations] = useState([]);
 
-  // Fetch astrologer profile
   const fetchProfile = async () => {
     try {
       const response = await axiosInstance.get("/astrologers/me");
       setProfile(response.data);
-      setIsAvailable(response.data.isAvailable); // Set availability state from profile data
+      setIsAvailable(response.data.isAvailable);
     } catch (error) {
       console.error("Fetch profile error:", error);
     } finally {
@@ -31,17 +29,18 @@ const AstrologerHomeScreen = ({ navigation }) => {
     }
   };
 
-  // Fetch live consultations
   const fetchLiveConsultations = async () => {
     try {
       const response = await axiosInstance.get("/consultations/live");
       setLiveConsultations(response.data);
     } catch (error) {
-      console.error("Fetch live consultations error:", error);
+      console.error(
+        "Fetch live consultations error:",
+        error.response ? error.response.data : error.message
+      );
     }
   };
 
-  // Handle logout
   const handleLogout = async () => {
     try {
       await removeToken();
@@ -51,13 +50,12 @@ const AstrologerHomeScreen = ({ navigation }) => {
     }
   };
 
-  // Handle availability toggle
   const handleToggleAvailability = async () => {
     try {
       await axiosInstance.patch("/astrologers/me/availability", {
         isAvailable: !isAvailable,
       });
-      setIsAvailable(!isAvailable); // Update local state
+      setIsAvailable(!isAvailable);
     } catch (error) {
       console.error("Error updating availability:", error);
     }
@@ -85,7 +83,6 @@ const AstrologerHomeScreen = ({ navigation }) => {
     );
   }
 
-  // Destructure and provide default values
   const {
     name,
     email,
@@ -93,6 +90,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
     availability = {},
     ratings = {},
   } = profile;
+
   const days = availability.days || [];
   const timeSlots = availability.timeSlots || [];
   const averageRating = ratings.average || "N/A";
@@ -112,72 +110,73 @@ const AstrologerHomeScreen = ({ navigation }) => {
     </View>
   );
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.profileContainer}>
-        <Text style={styles.header}>Welcome, {name}</Text>
+  const renderProfileDetails = () => (
+    <View style={styles.profileContainer}>
+      <Text style={styles.header}>Welcome, {name}</Text>
 
-        <View style={styles.profileSection}>
-          <Text style={styles.sectionTitle}>Profile Details</Text>
-          <Text style={styles.detailText}>Name: {name}</Text>
-          <Text style={styles.detailText}>Email: {email}</Text>
-          <Text style={styles.detailText}>
-            Specializations: {specializations.join(", ")}
-          </Text>
-        </View>
-
-        <View style={styles.profileSection}>
-          <Text style={styles.sectionTitle}>Availability</Text>
-          {/* <Text style={styles.detailText}>Days: {days.join(", ")}</Text>
-          <Text style={styles.detailText}>
-            Time Slots: {timeSlots.join(", ")}
-          </Text> */}
-          <View style={styles.toggleContainer}>
-            <Text style={styles.detailText}>Available for consultations:</Text>
-            <Switch
-              value={isAvailable}
-              onValueChange={handleToggleAvailability}
-            />
-          </View>
-        </View>
-
-        <View style={styles.profileSection}>
-          <Text style={styles.sectionTitle}>Ratings</Text>
-          <Text style={styles.detailText}>Average Rating: {averageRating}</Text>
-          <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
-        </View>
-
-        <View style={styles.profileSection}>
-          <Text style={styles.sectionTitle}>Live Consultations</Text>
-          {liveConsultations.length === 0 ? (
-            <Text>No live consultations at the moment.</Text>
-          ) : (
-            <FlatList
-              data={liveConsultations}
-              renderItem={renderConsultationItem}
-              keyExtractor={(item) => item._id.toString()}
-              contentContainerStyle={styles.consultationList}
-            />
-          )}
-        </View>
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate("UpcomingConsultations")}
-        >
-          <Text style={styles.buttonText}>Upcoming Consultations</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.button, styles.logoutButton]}
-          onPress={handleLogout}
-        >
-          <Text style={[styles.buttonText, styles.logoutButtonText]}>
-            Logout
-          </Text>
-        </TouchableOpacity>
+      <View style={styles.profileSection}>
+        <Text style={styles.sectionTitle}>Profile Details</Text>
+        <Text style={styles.detailText}>Name: {name}</Text>
+        <Text style={styles.detailText}>Email: {email}</Text>
+        <Text style={styles.detailText}>
+          Specializations: {specializations.join(", ")}
+        </Text>
       </View>
-    </ScrollView>
+
+      <View style={styles.profileSection}>
+        <Text style={styles.sectionTitle}>Availability</Text>
+        <View style={styles.toggleContainer}>
+          <Text style={styles.detailText}>Available for consultations:</Text>
+          <Switch
+            value={isAvailable}
+            onValueChange={handleToggleAvailability}
+          />
+        </View>
+      </View>
+
+      <View style={styles.profileSection}>
+        <Text style={styles.sectionTitle}>Ratings</Text>
+        <Text style={styles.detailText}>Average Rating: {averageRating}</Text>
+        <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
+      </View>
+
+      <View style={styles.profileSection}>
+        <Text style={styles.sectionTitle}>Live Consultations</Text>
+        {liveConsultations.length === 0 ? (
+          <Text>No live consultations at the moment.</Text>
+        ) : (
+          <FlatList
+            data={liveConsultations}
+            renderItem={renderConsultationItem}
+            keyExtractor={(item) => item._id.toString()}
+            contentContainerStyle={styles.consultationList}
+          />
+        )}
+      </View>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate("UpcomingConsultations")}
+      >
+        <Text style={styles.buttonText}>Upcoming Consultations</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
+      >
+        <Text style={[styles.buttonText, styles.logoutButtonText]}>Logout</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  return (
+    <FlatList
+      data={[{ key: "profile" }]}
+      renderItem={renderProfileDetails}
+      keyExtractor={(item) => item.key}
+      contentContainerStyle={styles.container}
+    />
   );
 };
 

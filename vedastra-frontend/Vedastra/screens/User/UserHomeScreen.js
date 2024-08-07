@@ -17,7 +17,6 @@ const HomeScreen = ({ navigation }) => {
   const [astrologers, setAstrologers] = useState([]);
   const [error, setError] = useState(null);
 
-  // Function to fetch today's zodiac sign and horoscope
   const fetchHoroscope = async () => {
     try {
       const zodiacResponse = await axiosInstance.get("/dailyHoroscopes");
@@ -39,7 +38,6 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Function to fetch the list of available astrologers
   const fetchAstrologers = async () => {
     try {
       const response = await axiosInstance.get("/astrologers");
@@ -56,13 +54,20 @@ const HomeScreen = ({ navigation }) => {
   const startConsultation = async (astrologerId) => {
     try {
       const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("User is not authenticated. Token is missing.");
+      }
       if (!astrologerId) {
         throw new Error("Astrologer ID is missing");
       }
 
+      console.log("Starting consultation with astrologerId:", astrologerId);
+      console.log("Using token:", token);
+
       const response = await axiosInstance.post(
-        `/consultations/${astrologerId}/start`,
-        { communicationType: "chat" }, // Ensure this matches what the backend expects
+        `/consultations/start`,
+        { astrologerId, communicationType: "chat" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -82,7 +87,6 @@ const HomeScreen = ({ navigation }) => {
     fetchAstrologers();
   }, []);
 
-  // Logout function
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token");
@@ -93,7 +97,6 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  // Render a single astrologer item
   const renderAstrologerItem = ({ item }) => (
     <View style={styles.astrologerItem}>
       <Text style={styles.astrologerName}>{item.name}</Text>

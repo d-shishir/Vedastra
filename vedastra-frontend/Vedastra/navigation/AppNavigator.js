@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
+import { AuthContext, AuthProvider } from "../contexts/AuthContext"; // Import the AuthContext and AuthProvider
+
 import OnboardingScreen from "../screens/OnboardingScreen";
 
 import UserLoginScreen from "../screens/User/UserLoginScreen";
@@ -20,7 +22,7 @@ const Stack = createStackNavigator();
 
 const UserStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="Login">
+    <Stack.Navigator initialRouteName="UserLogin">
       <Stack.Screen name="UserLogin" component={UserLoginScreen} />
       <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
       <Stack.Screen name="UserHome" component={UserHomeScreen} />
@@ -36,14 +38,13 @@ const UserStackNavigator = () => {
 
 const AstrologerStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="Login">
+    <Stack.Navigator initialRouteName="AstrologerLogin">
       <Stack.Screen name="AstrologerLogin" component={AstrologerLoginScreen} />
       <Stack.Screen
         name="AstrologerRegister"
         component={AstrologerRegisterScreen}
       />
       <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />
-
       <Stack.Screen
         name="UpcomingConsultations"
         component={AstrologerConsultationScreen}
@@ -54,9 +55,17 @@ const AstrologerStackNavigator = () => {
 };
 
 const MainNavigator = () => {
+  const { userRole } = useContext(AuthContext); // Access user role from context
+
+  const getInitialRoute = () => {
+    if (userRole === "user") return "UserStack";
+    if (userRole === "astrologer") return "AstrologerStack";
+    return "Onboarding";
+  };
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Onboarding">
+      <Stack.Navigator initialRouteName={getInitialRoute()}>
         <Stack.Screen
           name="Onboarding"
           component={OnboardingScreen}

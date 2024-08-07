@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, TextInput, Button, Alert, StyleSheet, Text } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import { storeToken } from "../../utils/tokenStorage";
+import { AuthContext } from "../../contexts/AuthContext";
 
 const AstrologerLoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setAuthData } = useContext(AuthContext);
 
   const handleLogin = async () => {
     try {
@@ -18,7 +20,15 @@ const AstrologerLoginScreen = ({ navigation }) => {
       // Store token in AsyncStorage
       await storeToken(token);
 
-      // Navigate to Astrologer Home screen
+      // Fetch astrologer profile
+      const meResponse = await axiosInstance.get("/astrologers/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Pass the response data to setAuthData
+      await setAuthData("astrologer", meResponse.data);
+
+      // Navigate to Home screen
       navigation.navigate("AstrologerHome");
     } catch (error) {
       console.error("Login error:", error);

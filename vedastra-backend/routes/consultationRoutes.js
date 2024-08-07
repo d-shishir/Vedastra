@@ -3,22 +3,22 @@ const {
   getConsultations,
   updateConsultationStatus,
   getLiveConsultations,
-  startConsultation, // Add this
+  startConsultation,
+  getConsultationById, // Import the new function
 } = require("../controllers/consultationController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-// Route to get consultations for a user or astrologer
-router.get("/", authMiddleware, getConsultations);
-
-// Route to update consultation status by ID
-router.patch("/:id/status", authMiddleware, updateConsultationStatus);
-
-// Route to get live consultations
+// Route to start a consultation
+router.post("/start", authMiddleware, startConsultation);
 router.get("/live", authMiddleware, getLiveConsultations);
 
-// Route to start a consultation
-router.post("/:id/start", authMiddleware, startConsultation); // Ensure this is the correct path
+// Route to get consultation details by ID
+router.get("/:id", authMiddleware, getConsultationById); // Add this route
+
+// Other routes
+router.get("/", authMiddleware, getConsultations);
+router.patch("/:id/status", authMiddleware, updateConsultationStatus);
 
 module.exports = router;

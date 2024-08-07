@@ -9,11 +9,11 @@ import {
   Button,
   ActivityIndicator,
 } from "react-native";
-import io from "socket.io-client"; // Import socket.io for real-time communication
+import io from "socket.io-client";
 import axiosInstance from "../api/axiosInstance";
 import { useRoute } from "@react-navigation/native";
+import { useAuth } from "../contexts/AuthContext"; // Import the custom hook
 
-// Initialize socket connection
 const socket = io("http://192.168.1.64:5000"); // Replace with your actual server URL
 
 const ChatScreen = ({ navigation }) => {
@@ -22,59 +22,108 @@ const ChatScreen = ({ navigation }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [consultationDetails, setConsultationDetails] = useState(null);
+  const { user } = useAuth(); // Use context to get user
+  console.log("User data:", user); // Debugging line
 
-  // Fetch previous messages from the chat API
-  const fetchMessages = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/api/chats/${consultationId}/messages`
-      );
-      setMessages(response.data);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Send a new message using the chat API
-  const handleSendMessage = async () => {
-    if (newMessage.trim()) {
-      try {
-        // Send message via API
-        await axiosInstance.post(`chats/${consultationId}/messages`, {
-          text: newMessage,
-        });
-
-        // Broadcast the message to other clients via Socket.IO
-        socket.emit("sendMessage", { consultationId, message: newMessage });
-        setNewMessage("");
-      } catch (error) {
-        console.error("Error sending message:", error);
-      }
-    }
-  };
-
-  // Handle receiving a new message
   useEffect(() => {
+    // Fetch consultation details
+    const fetchConsultationDetails = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/consultations/${consultationId}`
+        );
+        setConsultationDetails(response.data);
+      } catch (error) {
+        console.error("Error fetching consultation details:", error.message);
+      }
+    };
+
+    fetchConsultationDetails();
+  }, [consultationId]);
+  console.log("Consultation Details:", consultationDetails); // Debugging line
+
+  useEffect(() => {
+    // Fetch chat messages for the consultation
+    const fetchMessages = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/chats/${consultationId}/messages`
+        );
+        setMessages(response.data);
+      } catch (error) {
+        console.error("Error fetching messages:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMessages();
+  }, [consultationId]);
+
+  useEffect(() => {
+    // Listen for incoming messages
     socket.on("receiveMessage", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    // Join the chat room
+    // Join the room
     socket.emit("joinRoom", consultationId);
 
-    // Clean up on component unmount
+    // Cleanup on unmount
     return () => {
       socket.off("receiveMessage");
       socket.emit("leaveRoom", consultationId);
     };
   }, [consultationId]);
 
-  // Fetch messages when screen loads
-  useEffect(() => {
-    fetchMessages();
-  }, []);
+  // Handle sending a new message
+  const handleSendMessage = async () => {
+    if (newMessage.trim() && consultationDetails && user) {
+      try {
+        // Determine senderId and receiverId
+        const senderId = user._id; // Use ID from AuthContext
+        const senderType = user.role === "user" ? "User" : "Astrologer";
+        const receiverId =
+          senderType === "User"
+            ? consultationDetails.astrologerId
+            : consultationDetails.userId;
+        const receiverType = senderType === "User" ? "Astrologer" : "User";
+
+        const response = await axiosInstance.post(
+          `/chats/${consultationId}/messages`,
+          {
+            message: newMessage,
+            senderId, // Include senderId in message data
+            receiverId,
+            receiverIdType: receiverType,
+          }
+        );
+
+        console.log("Message sent:", response.data);
+        // Emit the message to the socket server
+        socket.emit("sendMessage", {
+          consultationId,
+          message: response.data,
+        });
+        console.log("Message emitted to socket:", response.data); // Debugging line
+
+        setNewMessage("");
+      } catch (error) {
+        console.error("Error sending message:", error.message);
+      }
+    }
+  };
+
+  // End the consultation
+  const endConsultation = async () => {
+    try {
+      await axiosInstance.patch(`/consultations/${consultationId}/end`);
+      navigation.navigate("AstrologerHomeScreen");
+    } catch (error) {
+      console.error("Error ending consultation:", error.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -85,14 +134,17 @@ const ChatScreen = ({ navigation }) => {
     );
   }
 
+  // Render each message
   const renderMessage = ({ item }) => (
     <View
       style={[
         styles.messageContainer,
-        item.sender === "user" ? styles.userMessage : styles.astrologerMessage,
+        item.senderIdType === "User"
+          ? styles.userMessage
+          : styles.astrologerMessage,
       ]}
     >
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={styles.messageText}>{item.message}</Text>
     </View>
   );
 
@@ -115,6 +167,9 @@ const ChatScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
+      </View>
+      <View style={styles.buttonContainer}>
+        <Button title="End Consultation" onPress={endConsultation} />
       </View>
       <Button title="Back to Home" onPress={() => navigation.goBack()} />
     </View>
@@ -188,6 +243,10 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: "#ffffff",
     fontSize: 16,
+  },
+  buttonContainer: {
+    marginTop: 10,
+    paddingHorizontal: 16,
   },
 });
 

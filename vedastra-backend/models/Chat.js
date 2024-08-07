@@ -11,12 +11,20 @@ const ChatSchema = new mongoose.Schema({
       senderId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        // This can reference either a User or an Astrologer
       },
       receiverId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        // This can also reference either a User or an Astrologer
+      },
+      senderIdType: {
+        type: String,
+        enum: ["User", "Astrologer"],
+        required: true,
+      },
+      receiverIdType: {
+        type: String,
+        enum: ["User", "Astrologer"],
+        required: true,
       },
       message: {
         type: String,
@@ -30,17 +38,22 @@ const ChatSchema = new mongoose.Schema({
   ],
 });
 
-// Ensure that senderId and receiverId can reference both User and Astrologer
+// Virtual for sender
 ChatSchema.virtual("sender", {
-  ref: "User", // You might need to use 'Astrologer' as well
-  localField: "senderId",
+  ref: function (doc) {
+    return doc.senderIdType === "User" ? "User" : "Astrologer";
+  },
+  localField: "messages.senderId",
   foreignField: "_id",
   justOne: true,
 });
 
+// Virtual for receiver
 ChatSchema.virtual("receiver", {
-  ref: "User", // You might need to use 'Astrologer' as well
-  localField: "receiverId",
+  ref: function (doc) {
+    return doc.receiverIdType === "User" ? "User" : "Astrologer";
+  },
+  localField: "messages.receiverId",
   foreignField: "_id",
   justOne: true,
 });
