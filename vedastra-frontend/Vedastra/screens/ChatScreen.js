@@ -12,7 +12,9 @@ import {
 import io from "socket.io-client";
 import axiosInstance from "../api/axiosInstance";
 import { useRoute } from "@react-navigation/native";
-import { useAuth } from "../contexts/AuthContext"; // Import the custom hook
+import { useAuth } from "../contexts/AuthContext";
+import { getToken } from "../utils/tokenStorage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const socket = io("http://192.168.1.64:5000"); // Replace with your actual server URL
 
@@ -23,11 +25,13 @@ const ChatScreen = ({ navigation }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [consultationDetails, setConsultationDetails] = useState(null);
-  const { user } = useAuth(); // Use context to get user
-  console.log("User data:", user); // Debugging line
+  const { userRole, userId, astrologerId } = useAuth();
+  const user = {
+    _id: userRole === "user" ? userId : astrologerId,
+    role: userRole,
+  };
 
   useEffect(() => {
-    // Fetch consultation details
     const fetchConsultationDetails = async () => {
       try {
         const response = await axiosInstance.get(
@@ -41,10 +45,8 @@ const ChatScreen = ({ navigation }) => {
 
     fetchConsultationDetails();
   }, [consultationId]);
-  console.log("Consultation Details:", consultationDetails); // Debugging line
 
   useEffect(() => {
-    // Fetch chat messages for the consultation
     const fetchMessages = async () => {
       try {
         const response = await axiosInstance.get(
@@ -62,27 +64,25 @@ const ChatScreen = ({ navigation }) => {
   }, [consultationId]);
 
   useEffect(() => {
-    // Listen for incoming messages
     socket.on("receiveMessage", (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
-    // Join the room
     socket.emit("joinRoom", consultationId);
 
-    // Cleanup on unmount
     return () => {
       socket.off("receiveMessage");
       socket.emit("leaveRoom", consultationId);
     };
   }, [consultationId]);
 
-  // Handle sending a new message
   const handleSendMessage = async () => {
     if (newMessage.trim() && consultationDetails && user) {
       try {
-        // Determine senderId and receiverId
-        const senderId = user._id; // Use ID from AuthContext
+        const token = await AsyncStorage.getItem("token");
+        console.log("Token before sending message:", token); // Debugging log
+
+        const senderId = user._id;
         const senderType = user.role === "user" ? "User" : "Astrologer";
         const receiverId =
           senderType === "User"
@@ -94,19 +94,16 @@ const ChatScreen = ({ navigation }) => {
           `/chats/${consultationId}/messages`,
           {
             message: newMessage,
-            senderId, // Include senderId in message data
+            senderId,
             receiverId,
-            receiverIdType: receiverType,
+            receiverType,
           }
         );
 
-        console.log("Message sent:", response.data);
-        // Emit the message to the socket server
         socket.emit("sendMessage", {
           consultationId,
           message: response.data,
         });
-        console.log("Message emitted to socket:", response.data); // Debugging line
 
         setNewMessage("");
       } catch (error) {
@@ -115,7 +112,6 @@ const ChatScreen = ({ navigation }) => {
     }
   };
 
-  // End the consultation
   const endConsultation = async () => {
     try {
       await axiosInstance.patch(`/consultations/${consultationId}/end`);
@@ -134,7 +130,6 @@ const ChatScreen = ({ navigation }) => {
     );
   }
 
-  // Render each message
   const renderMessage = ({ item }) => (
     <View
       style={[
@@ -154,9 +149,10 @@ const ChatScreen = ({ navigation }) => {
         data={messages}
         renderItem={renderMessage}
         keyExtractor={(item) => item._id}
-        inverted
+        inverted // Ensure this matches your layout needs
         contentContainerStyle={styles.messageList}
       />
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.textInput}
@@ -195,12 +191,14 @@ const styles = StyleSheet.create({
   },
   messageList: {
     padding: 16,
+    flexGrow: 1,
   },
   messageContainer: {
     marginBottom: 10,
     borderRadius: 10,
     padding: 10,
     maxWidth: "80%",
+    alignSelf: "flex-start", // Default alignment
   },
   userMessage: {
     alignSelf: "flex-end",

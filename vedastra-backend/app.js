@@ -1,6 +1,7 @@
 const express = require("express");
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
+const cors = require("cors");
 require("dotenv").config();
 
 // Connect to the database
@@ -10,6 +11,9 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Routes
 app.use("/api/users", require("./routes/userRoutes"));

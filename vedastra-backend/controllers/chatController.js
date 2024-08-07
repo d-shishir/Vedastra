@@ -7,22 +7,19 @@ const sendMessage = async (req, res) => {
     const { consultationId } = req.params;
     const { message } = req.body;
 
-    // Ensure message is provided
     if (!message) {
       return res.status(400).json({ msg: "Message is required" });
     }
 
-    // Fetch consultation to get userId and astrologerId
     const consultation = await Consultation.findById(consultationId);
     if (!consultation) {
       return res.status(404).send("Consultation not found");
     }
 
-    // Determine senderId and receiverId based on the authenticated user
     const senderId = req.user
-      ? req.user._id
+      ? req.user.id
       : req.astrologer
-      ? req.astrologer._id
+      ? req.astrologer.id // Access the id field from astrologer
       : null;
     const senderType = req.user ? "User" : req.astrologer ? "Astrologer" : null;
 
@@ -30,7 +27,6 @@ const sendMessage = async (req, res) => {
       return res.status(401).json({ msg: "User not authenticated" });
     }
 
-    // Determine the receiverId and receiverType
     let receiverId;
     let receiverType;
 
@@ -42,27 +38,23 @@ const sendMessage = async (req, res) => {
       receiverType = "User";
     }
 
-    // Find or create the chat
     let chat = await ChatModel.findOne({ consultationId });
 
     if (!chat) {
-      // Create a new chat if it doesn't exist
       chat = new ChatModel({ consultationId, messages: [] });
       await chat.save();
     }
 
-    // Update the chat with the new message
     chat.messages.push({
       senderId,
       receiverId,
       message,
-      senderType,
-      receiverType,
+      senderIdType: senderType,
+      receiverIdType: receiverType,
     });
 
     await chat.save();
 
-    // Respond with the updated messages
     res.status(200).json(chat.messages);
   } catch (error) {
     console.error("Error sending message:", error);

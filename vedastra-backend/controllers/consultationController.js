@@ -68,6 +68,20 @@ const startConsultation = async (req, res) => {
         .json({ message: "astrologerId and communicationType are required" });
     }
 
+    // Check if the user already has an active consultation
+    const now = new Date();
+    const liveConsultations = await Consultation.find({
+      userId,
+      scheduledAt: { $lte: now },
+      status: "live",
+    });
+
+    if (liveConsultations.length > 0) {
+      return res
+        .status(400)
+        .json({ message: "You already have an active consultation." });
+    }
+
     const newConsultation = new Consultation({
       userId,
       astrologerId,
@@ -83,6 +97,7 @@ const startConsultation = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 // Get consultation details by ID
 const getConsultationById = async (req, res) => {
   try {

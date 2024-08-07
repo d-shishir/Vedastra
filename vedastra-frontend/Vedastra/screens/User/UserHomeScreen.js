@@ -16,6 +16,7 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [astrologers, setAstrologers] = useState([]);
   const [error, setError] = useState(null);
+  const [activeConsultation, setActiveConsultation] = useState(null);
 
   const fetchHoroscope = async () => {
     try {
@@ -51,8 +52,35 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const fetchActiveConsultation = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        const response = await axiosInstance.get("/consultations/live", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const userId = await AsyncStorage.getItem("userId");
+        const userLiveConsultation = response.data.find(
+          (consultation) => consultation.userId._id === userId
+        );
+        setActiveConsultation(userLiveConsultation || null);
+      }
+    } catch (error) {
+      console.error("Fetch active consultation error:", error);
+      setError("Failed to fetch active consultation.");
+    }
+  };
+
   const startConsultation = async (astrologerId) => {
     try {
+      if (activeConsultation) {
+        // If there's an active consultation, navigate to the chat screen
+        navigation.navigate("ChatScreen", {
+          consultationId: activeConsultation._id,
+        });
+        return;
+      }
+
       const token = await AsyncStorage.getItem("token");
 
       if (!token) {
@@ -61,9 +89,6 @@ const HomeScreen = ({ navigation }) => {
       if (!astrologerId) {
         throw new Error("Astrologer ID is missing");
       }
-
-      console.log("Starting consultation with astrologerId:", astrologerId);
-      console.log("Using token:", token);
 
       const response = await axiosInstance.post(
         `/consultations/start`,
@@ -85,6 +110,7 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     fetchHoroscope();
     fetchAstrologers();
+    fetchActiveConsultation();
   }, []);
 
   const handleLogout = async () => {
@@ -105,7 +131,9 @@ const HomeScreen = ({ navigation }) => {
         style={styles.chatButton}
         onPress={() => startConsultation(item._id)}
       >
-        <Text style={styles.chatButtonText}>Let's Chat</Text>
+        <Text style={styles.chatButtonText}>
+          {activeConsultation ? "Continue Chat" : "Let's Chat"}
+        </Text>
       </TouchableOpacity>
     </View>
   );

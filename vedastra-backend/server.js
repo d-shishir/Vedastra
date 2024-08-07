@@ -4,7 +4,14 @@ const app = require("./app"); // Import the Express app
 require("dotenv").config();
 
 const server = http.createServer(app); // Create an HTTP server from the Express app
-const io = socketIo(server); // Integrate Socket.io with the server
+const io = socketIo(server, {
+  cors: {
+    origin: "http://localhost:8081", // Your frontend origin
+    methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true,
+  },
+}); // Integrate Socket.io with the server
 
 // Socket.io event handlers
 io.on("connection", (socket) => {

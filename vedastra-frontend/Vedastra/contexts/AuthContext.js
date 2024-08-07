@@ -15,21 +15,24 @@ const AuthProvider = ({ children }) => {
     const fetchAuthData = async () => {
       try {
         const role = await AsyncStorage.getItem("userRole");
-        const id =
-          role === "user"
-            ? await AsyncStorage.getItem("userId")
-            : await AsyncStorage.getItem("astrologerId");
-        setUserRole(role);
-        if (role === "user") setUserId(id);
-        else setAstrologerId(id);
-        if (role === "astrologer") {
-          await fetchProfile(id);
-          await fetchLiveConsultations(id);
+        if (role) {
+          const id = await AsyncStorage.getItem(
+            role === "user" ? "userId" : "astrologerId"
+          );
+          setUserRole(role);
+          if (role === "user") {
+            setUserId(id);
+          } else {
+            setAstrologerId(id);
+            await fetchProfile(id);
+            await fetchLiveConsultations(id);
+          }
         }
       } catch (error) {
         console.error("Error fetching auth data:", error);
       }
     };
+
     fetchAuthData();
   }, []);
 
@@ -69,22 +72,17 @@ const AuthProvider = ({ children }) => {
     const id = response._id;
 
     try {
-      // Store userRole in AsyncStorage
       await AsyncStorage.setItem("userRole", role);
-
-      // Store userId or astrologerId based on the role
       if (role === "user") {
         await AsyncStorage.setItem("userId", id);
-        setUserId(id); // Update state for userId
+        setUserId(id);
       } else if (role === "astrologer") {
         await AsyncStorage.setItem("astrologerId", id);
-        setAstrologerId(id); // Update state for astrologerId
+        setAstrologerId(id);
       } else {
         console.error("Invalid role provided");
         return;
       }
-
-      // Update role state
       setRole(role);
     } catch (error) {
       console.error("Error setting auth data:", error);
