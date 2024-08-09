@@ -27,8 +27,12 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", (data) => {
     console.log("Message received:", data);
     io.to(data.consultationId).emit("receiveMessage", {
-      text: data.message,
-      sender: data.sender,
+      _id: data._id, // Include _id for the message
+      message: data.message,
+      senderId: data.sender,
+      receiverId: data.receiver,
+      senderType: data.senderType, // Include senderType if needed
+      receiverType: data.receiverType, // Include receiverType if needed
     });
   });
 

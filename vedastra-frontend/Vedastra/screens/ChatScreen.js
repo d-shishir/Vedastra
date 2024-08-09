@@ -6,15 +6,16 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  Button,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import io from "socket.io-client";
 import axiosInstance from "../api/axiosInstance";
 import { useRoute } from "@react-navigation/native";
 import { useAuth } from "../contexts/AuthContext";
-import { getToken } from "../utils/tokenStorage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import UUID from "react-native-uuid"; // Ensure you have react-native-uuid installed
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
 
 const socket = io("http://192.168.1.64:5000"); // Replace with your actual server URL
 
@@ -65,6 +66,7 @@ const ChatScreen = ({ navigation }) => {
 
   useEffect(() => {
     socket.on("receiveMessage", (message) => {
+      // console.log("Received message:", message); // Debug received message
       setMessages((prevMessages) => [...prevMessages, message]);
     });
 
@@ -80,7 +82,6 @@ const ChatScreen = ({ navigation }) => {
     if (newMessage.trim() && consultationDetails && user) {
       try {
         const token = await AsyncStorage.getItem("token");
-        console.log("Token before sending message:", token); // Debugging log
 
         const senderId = user._id;
         const senderType = user.role === "user" ? "User" : "Astrologer";
@@ -100,9 +101,23 @@ const ChatScreen = ({ navigation }) => {
           }
         );
 
+        const sentMessage = response.data;
+        sentMessage._id = UUID.v4(); // Generate UUID using react-native-uuid
+        sentMessage.senderId = senderId;
+        sentMessage.receiverId = receiverId;
+        sentMessage.senderType = senderType;
+        sentMessage.receiverType = receiverType;
+
+        setMessages((prevMessages) => [...prevMessages, sentMessage]);
+
         socket.emit("sendMessage", {
           consultationId,
-          message: response.data,
+          message: newMessage,
+          sender: senderId,
+          receiver: receiverId,
+          _id: sentMessage._id, // Ensure ID is included
+          senderType,
+          receiverType,
         });
 
         setNewMessage("");
@@ -130,26 +145,58 @@ const ChatScreen = ({ navigation }) => {
     );
   }
 
-  const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.messageContainer,
-        item.senderIdType === "User"
-          ? styles.userMessage
-          : styles.astrologerMessage,
-      ]}
-    >
-      <Text style={styles.messageText}>{item.message}</Text>
-    </View>
-  );
+  const renderMessage = ({ item }) => {
+    const isUserMessage = item.senderId === user._id;
+
+    if (!item._id || !item.message) {
+      // console.warn("Message missing _id or message text:", item);
+      return null;
+    }
+
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isUserMessage ? styles.userMessage : styles.astrologerMessage,
+        ]}
+      >
+        <Text
+          style={[
+            styles.messageText,
+            isUserMessage
+              ? styles.userMessageText
+              : styles.astrologerMessageText,
+          ]}
+        >
+          {item.message}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
+      <View style={styles.navbar}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("ProfileScreen", {
+              userId: consultationDetails.userId,
+            })
+          }
+        >
+          <Icon name="person" size={30} color="#007bff" />
+        </TouchableOpacity>
+        <Button
+          title="End Consultation"
+          onPress={endConsultation}
+          color="#dc3545"
+        />
+      </View>
+
       <FlatList
         data={messages}
         renderItem={renderMessage}
-        keyExtractor={(item) => item._id}
-        inverted // Ensure this matches your layout needs
+        keyExtractor={(item) => item._id.toString()} // Ensure unique keys
         contentContainerStyle={styles.messageList}
       />
 
@@ -164,10 +211,6 @@ const ChatScreen = ({ navigation }) => {
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.buttonContainer}>
-        <Button title="End Consultation" onPress={endConsultation} />
-      </View>
-      <Button title="Back to Home" onPress={() => navigation.goBack()} />
     </View>
   );
 };
@@ -177,6 +220,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
     justifyContent: "space-between",
+  },
+  navbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ced4da",
+    backgroundColor: "#ffffff",
+  },
+  profileIcon: {
+    width: 30,
+    height: 30,
   },
   loaderContainer: {
     flex: 1,
@@ -198,24 +254,29 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     maxWidth: "80%",
-    alignSelf: "flex-start", // Default alignment
   },
   userMessage: {
     alignSelf: "flex-end",
-    backgroundColor: "#007bff",
+    backgroundColor: "#007bff", // Bluish color for user messages
   },
   astrologerMessage: {
     alignSelf: "flex-start",
-    backgroundColor: "#e9ecef",
+    backgroundColor: "#e9ecef", // Gray color for received messages
   },
   messageText: {
-    color: "#ffffff",
     fontSize: 16,
+  },
+  userMessageText: {
+    color: "#ffffff", // White text for user messages
+  },
+  astrologerMessageText: {
+    color: "#333333", // Darker text color for received messages
   },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
+    marginBottom: 10,
     borderTopWidth: 1,
     borderColor: "#ced4da",
     backgroundColor: "#ffffff",
@@ -241,10 +302,6 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: "#ffffff",
     fontSize: 16,
-  },
-  buttonContainer: {
-    marginTop: 10,
-    paddingHorizontal: 16,
   },
 });
 
