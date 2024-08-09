@@ -23,8 +23,16 @@ const Stack = createStackNavigator();
 const UserStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="UserLogin">
-      <Stack.Screen name="UserLogin" component={UserLoginScreen} />
-      <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
+      <Stack.Screen
+        name="UserLogin"
+        component={UserLoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="UserRegister"
+        component={UserRegisterScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="UserHome" component={UserHomeScreen} />
       <Stack.Screen name="BookingScreen" component={BookingScreen} />
       <Stack.Screen name="ChatScreen" component={ChatScreen} />

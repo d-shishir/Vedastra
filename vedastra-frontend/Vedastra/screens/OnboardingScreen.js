@@ -1,7 +1,14 @@
 import React, { useContext } from "react";
-import { View, Text, StyleSheet, ImageBackground } from "react-native";
-import { Button } from "react-native-elements";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import { AuthContext } from "../contexts/AuthContext"; // Import the AuthContext
+import { colors } from "../utils/colors";
 
 const OnboardingScreen = ({ navigation }) => {
   const { setRole } = useContext(AuthContext); // Use the context to set role
@@ -21,21 +28,28 @@ const OnboardingScreen = ({ navigation }) => {
       style={styles.background}
     >
       <View style={styles.container}>
-        <Text style={styles.header}>Welcome to Vedastra!</Text>
+        <View style={styles.headerContainer}>
+          <Image
+            source={require("../assets/vedastra.png")}
+            style={{ width: 70, height: 70 }}
+          />
+          <Text style={styles.header}>Welcome to</Text>
+          <Text style={styles.header}>Vedastra!</Text>
+        </View>
         <Text style={styles.subHeader}>Select Your Role</Text>
 
-        <Button
-          title="I am a User"
-          buttonStyle={styles.button}
-          containerStyle={styles.buttonContainer}
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => handleRoleSelection("user")}
-        />
-        <Button
-          title="I am an Astrologer"
-          buttonStyle={styles.button}
-          containerStyle={styles.buttonContainer}
+        >
+          <Text style={styles.buttonText}>I am a User</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => handleRoleSelection("astrologer")}
-        />
+        >
+          <Text style={styles.buttonText}>I am an Astrologer</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -54,29 +68,40 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     elevation: 5, // For shadow on Android
-    shadowColor: "#000", // Shadow color on iOS
+    shadowColor: colors.primary, // Shadow color on iOS
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
   },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
   header: {
-    fontSize: 32,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
+    fontFamily: "Roboto-Bold", // Ensure you have the appropriate font imported
+    color: colors.primary,
+    marginTop: 10,
   },
   subHeader: {
     fontSize: 18,
-    color: "#666",
+
     marginBottom: 30,
+    fontFamily: "Roboto-Regular", // Ensure you have the appropriate font imported
   },
   button: {
-    backgroundColor: "#007bff",
-    borderRadius: 5,
-  },
-  buttonContainer: {
     width: "100%",
+    padding: 15,
+    borderRadius: 100,
+    backgroundColor: colors.primary,
     marginVertical: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontFamily: "Roboto-Bold", // Ensure you have the appropriate font imported
   },
 });
 

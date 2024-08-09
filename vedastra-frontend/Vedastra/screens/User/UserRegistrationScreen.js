@@ -10,12 +10,17 @@ import {
   FlatList,
   TouchableOpacity,
   Text,
+  Image,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axiosInstance from "../../api/axiosInstance";
 import { storeToken } from "../../utils/tokenStorage";
 import { searchLocation } from "../../utils/locationiq"; // Import the LocationIQ utility
 import debounce from "lodash/debounce";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
+import { colors } from "../../utils/colors";
+import { fonts } from "../../utils/fonts";
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -127,81 +132,123 @@ const RegisterScreen = ({ navigation }) => {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled" // Ensure taps outside text inputs dismiss keyboard
     >
-      <Text style={styles.header}>Register</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Name (required)"
-        value={name}
-        onChangeText={setName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email (required)"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password (required)"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <View style={styles.pickerContainer}>
-        <Button
-          title="Select Birthdate"
-          onPress={() => setShowDatePicker(true)}
-        />
-        {showDatePicker && (
-          <DateTimePicker
-            value={birthdate}
-            mode="date"
-            display="default"
-            onChange={handleDateChange}
-          />
-        )}
+      <TouchableOpacity
+        style={styles.backButtonWrapper}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back-outline" color={colors.primary} size={25} />
+      </TouchableOpacity>
+      <View style={styles.textContainer}>
+        <Text style={styles.headingText}>Let's get</Text>
+        <Text style={styles.headingText}>started</Text>
       </View>
-      <View style={styles.pickerContainer}>
-        <Button
-          title="Select Birthtime"
-          onPress={() => setShowTimePicker(true)}
-        />
-        {showTimePicker && (
-          <DateTimePicker
-            value={birthtime}
-            mode="time"
-            display="default"
-            onChange={handleTimeChange}
+      <View style={styles.formContainer}>
+        <View style={styles.inputContainer}>
+          <Ionicons name="person-outline" size={30} color={colors.secondary} />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter your name"
+            placeholderTextColor={colors.secondary}
+            value={name}
+            onChangeText={setName}
           />
-        )}
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter Birthplace (required)"
-        value={birthplace}
-        onChangeText={handleBirthplaceChange}
-      />
-      {locationResults.length > 0 && (
-        <FlatList
-          data={locationResults}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleLocationSelect(item)}>
-              <Text style={styles.locationItem}>{item.description}</Text>
-            </TouchableOpacity>
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons name="mail-outline" size={30} color={colors.secondary} />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter your email"
+            placeholderTextColor={colors.secondary}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+        <View style={styles.inputContainer}>
+          <SimpleLineIcons name="lock" size={30} color={colors.secondary} />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter your password"
+            placeholderTextColor={colors.secondary}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity onPress={() => setSecureEntery((prev) => !prev)}>
+            <SimpleLineIcons name="eye" size={20} color={colors.secondary} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.pickerContainer}>
+          <Button
+            title="Select Birthdate"
+            onPress={() => setShowDatePicker(true)}
+          />
+          {showDatePicker && (
+            <DateTimePicker
+              value={birthdate}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
           )}
-        />
-      )}
-      <TextInput
-        style={styles.input}
-        placeholder="Profile Picture URL"
-        value={profilePicture}
-        onChangeText={setProfilePicture}
-      />
-      <Button title="Register" onPress={handleRegister} color="#007bff" />
+        </View>
+        <View style={styles.pickerContainer}>
+          <Button
+            title="Select Birthtime"
+            onPress={() => setShowTimePicker(true)}
+          />
+          {showTimePicker && (
+            <DateTimePicker
+              value={birthtime}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="location-outline"
+            size={30}
+            color={colors.secondary}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Enter Birthplace"
+            placeholderTextColor={colors.secondary}
+            value={birthplace}
+            onChangeText={handleBirthplaceChange}
+          />
+          {locationResults.length > 0 && (
+            <FlatList
+              data={locationResults}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => handleLocationSelect(item)}>
+                  <Text style={styles.locationItem}>{item.description}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </View>
+        <View style={styles.inputContainer}>
+          <Ionicons name="image-outline" size={30} color={colors.secondary} />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Profile Picture URL"
+            placeholderTextColor={colors.secondary}
+            value={profilePicture}
+            onChangeText={setProfilePicture}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.registerButtonWrapper}
+          onPress={handleRegister}
+        >
+          <Text style={styles.registerText}>Register</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
@@ -210,28 +257,42 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     justifyContent: "center",
-    padding: 16,
-    backgroundColor: "#f8f9fa",
+    padding: 20,
+    backgroundColor: colors.white,
   },
-  header: {
+  backButtonWrapper: {
+    height: 40,
+    width: 40,
+    backgroundColor: colors.gray,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textContainer: {
+    marginVertical: 20,
+  },
+  headingText: {
     fontSize: 32,
-    fontWeight: "bold",
-    color: "#343a40",
-    marginBottom: 24,
-    textAlign: "center",
+    color: colors.primary,
+    fontFamily: fonts.SemiBold,
   },
-  input: {
-    height: 50,
-    borderColor: "#ced4da",
+  formContainer: {
+    marginTop: 20,
+  },
+  inputContainer: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderColor: colors.secondary,
+    borderRadius: 100,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    marginVertical: 10,
+  },
+  textInput: {
+    flex: 1,
+    paddingHorizontal: 10,
+    fontFamily: fonts.Light,
   },
   pickerContainer: {
     marginBottom: 16,
@@ -239,7 +300,19 @@ const styles = StyleSheet.create({
   locationItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: colors.secondary,
+  },
+  registerButtonWrapper: {
+    backgroundColor: colors.primary,
+    borderRadius: 100,
+    marginTop: 20,
+  },
+  registerText: {
+    color: colors.white,
+    fontSize: 20,
+    fontFamily: fonts.SemiBold,
+    textAlign: "center",
+    padding: 10,
   },
 });
 
