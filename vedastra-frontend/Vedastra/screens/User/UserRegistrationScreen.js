@@ -34,6 +34,7 @@ const RegisterScreen = ({ navigation }) => {
   const [profilePicture, setProfilePicture] = useState("");
   const [locationResults, setLocationResults] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [secureEntry, setSecureEntry] = useState(true);
 
   const handleRegister = async () => {
     if (!name || !email || !password || !birthdate || !birthplace) {
@@ -175,8 +176,12 @@ const RegisterScreen = ({ navigation }) => {
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity onPress={() => setSecureEntery((prev) => !prev)}>
-            <SimpleLineIcons name="eye" size={20} color={colors.secondary} />
+          <TouchableOpacity onPress={() => setSecureEntry((prev) => !prev)}>
+            <Ionicons
+              name={secureEntry ? "eye-off" : "eye"}
+              size={20}
+              color={colors.secondary}
+            />
           </TouchableOpacity>
         </View>
         <View style={styles.pickerContainer}>

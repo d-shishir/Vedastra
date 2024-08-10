@@ -47,10 +47,15 @@ const UserStackNavigator = () => {
 const AstrologerStackNavigator = () => {
   return (
     <Stack.Navigator initialRouteName="AstrologerLogin">
-      <Stack.Screen name="AstrologerLogin" component={AstrologerLoginScreen} />
+      <Stack.Screen
+        name="AstrologerLogin"
+        component={AstrologerLoginScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="AstrologerRegister"
         component={AstrologerRegisterScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />
       <Stack.Screen

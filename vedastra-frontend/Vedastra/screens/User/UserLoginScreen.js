@@ -93,8 +93,8 @@ const UserLoginScreen = () => {
             onChangeText={setPassword}
           />
           <TouchableOpacity onPress={() => setSecureEntry((prev) => !prev)}>
-            <SimpleLineIcons
-              name={secureEntry ? "eye" : "eye-off"}
+            <Ionicons
+              name={secureEntry ? "eye-off" : "eye"}
               size={20}
               color={colors.secondary}
             />
