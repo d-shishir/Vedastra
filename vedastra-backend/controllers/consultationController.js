@@ -1,5 +1,6 @@
 const Consultation = require("../models/Consultation"); // Adjust the path as needed
 const mongoose = require("mongoose");
+const { generateKeyPair } = require("../utils/cryptoUtils");
 
 // Get consultations for a user or astrologer
 const getConsultations = async (req, res) => {
@@ -68,7 +69,12 @@ const startConsultation = async (req, res) => {
         .json({ message: "astrologerId and communicationType are required" });
     }
 
-    // Check if the user already has an active consultation
+    // Generate key pairs for the user and astrologer
+    const { publicKey: userPublicKey, privateKey: userPrivateKey } =
+      generateKeyPair();
+    const { publicKey: astrologerPublicKey } = generateKeyPair(); // Ensure correct key is used
+
+    // Check for existing consultations
     const now = new Date();
     const liveConsultations = await Consultation.find({
       userId,
@@ -88,6 +94,8 @@ const startConsultation = async (req, res) => {
       scheduledAt: new Date(),
       status: "live",
       communicationType,
+      userPublicKey, // Ensure this field is being saved
+      astrologerPublicKey, // Ensure this field is being saved
     });
 
     await newConsultation.save();

@@ -58,6 +58,9 @@ const AstrologerLoginScreen = ({ navigation }) => {
   const handleSignup = () => {
     navigation.navigate("AstrologerRegister");
   };
+  const handleForgot = () => {
+    navigation.navigate("Forgot");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,7 +107,7 @@ const AstrologerLoginScreen = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleForgot}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
   backButtonWrapper: {
     height: 40,
     width: 40,
-    backgroundColor: colors.gray,
+    backgroundColor: colors.accent,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",

@@ -28,7 +28,11 @@ const ChatSchema = new mongoose.Schema({
       },
       message: {
         type: String,
-        required: true,
+        required: true, // Ensure this is not missing
+      },
+      iv: {
+        type: String,
+        required: true, // Ensure this is not missing
       },
       createdAt: {
         type: Date,
@@ -40,9 +44,7 @@ const ChatSchema = new mongoose.Schema({
 
 // Virtual for sender
 ChatSchema.virtual("sender", {
-  ref: function (doc) {
-    return doc.senderIdType === "User" ? "User" : "Astrologer";
-  },
+  refPath: "messages.senderIdType", // Use dynamic reference path
   localField: "messages.senderId",
   foreignField: "_id",
   justOne: true,
@@ -50,9 +52,7 @@ ChatSchema.virtual("sender", {
 
 // Virtual for receiver
 ChatSchema.virtual("receiver", {
-  ref: function (doc) {
-    return doc.receiverIdType === "User" ? "User" : "Astrologer";
-  },
+  refPath: "messages.receiverIdType", // Use dynamic reference path
   localField: "messages.receiverId",
   foreignField: "_id",
   justOne: true,

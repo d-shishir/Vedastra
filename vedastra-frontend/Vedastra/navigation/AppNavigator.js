@@ -4,6 +4,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { AuthContext, AuthProvider } from "../contexts/AuthContext"; // Import the AuthContext and AuthProvider
 
 import OnboardingScreen from "../screens/OnboardingScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
 import UserLoginScreen from "../screens/User/UserLoginScreen";
 import UserRegisterScreen from "../screens/User/UserRegistrationScreen";
@@ -33,6 +34,11 @@ const UserStackNavigator = () => {
         component={UserRegisterScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="Forgot"
+        component={ForgotPasswordScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="UserHome" component={UserHomeScreen} />
       <Stack.Screen name="BookingScreen" component={BookingScreen} />
       <Stack.Screen name="ChatScreen" component={ChatScreen} />
@@ -55,6 +61,11 @@ const AstrologerStackNavigator = () => {
       <Stack.Screen
         name="AstrologerRegister"
         component={AstrologerRegisterScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Forgot"
+        component={ForgotPasswordScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />

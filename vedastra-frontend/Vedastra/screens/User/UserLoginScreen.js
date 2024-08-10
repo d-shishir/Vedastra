@@ -54,6 +54,9 @@ const UserLoginScreen = () => {
   const handleSignup = () => {
     navigation.navigate("UserRegister");
   };
+  const handleForgot = () => {
+    navigation.navigate("Forgot");
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,7 +103,7 @@ const UserLoginScreen = () => {
             />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleForgot}>
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -137,7 +140,7 @@ const styles = StyleSheet.create({
   backButtonWrapper: {
     height: 40,
     width: 40,
-    backgroundColor: colors.gray,
+    backgroundColor: colors.accent,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",

@@ -18,7 +18,7 @@ const ConsultationSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ["live", "completed"],
-    default: "live", // Set the default status to "live"
+    default: "live",
   },
   communicationType: {
     type: String,
@@ -31,6 +31,12 @@ const ConsultationSchema = new mongoose.Schema({
   },
   review: {
     type: String,
+  },
+  userPublicKey: {
+    type: String, // Store the public key as a string
+  },
+  astrologerPublicKey: {
+    type: String, // Store the public key as a string
   },
   createdAt: {
     type: Date,

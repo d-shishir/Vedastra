@@ -13,9 +13,6 @@ import { colors } from "../utils/colors";
 const OnboardingScreen = ({ navigation }) => {
   const { setRole } = useContext(AuthContext); // Use the context to set role
 
-  const backgroundImageUrl =
-    "https://images.unsplash.com/photo-1516571748831-5d81767b788d?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"; // Replace with your image URL
-
   // Function to handle role selection and navigation
   const handleRoleSelection = async (role) => {
     await setRole(role);
@@ -24,17 +21,16 @@ const OnboardingScreen = ({ navigation }) => {
 
   return (
     <ImageBackground
-      source={{ uri: backgroundImageUrl }}
+      source={require("../assets/bg.jpg")}
       style={styles.background}
     >
       <View style={styles.container}>
         <View style={styles.headerContainer}>
           <Image
             source={require("../assets/vedastra.png")}
-            style={{ width: 70, height: 70 }}
+            style={{ width: 150, height: 70 }}
           />
-          <Text style={styles.header}>Welcome to</Text>
-          <Text style={styles.header}>Vedastra!</Text>
+          <Text style={styles.header}>Welcome to Vedastra!</Text>
         </View>
         <Text style={styles.subHeader}>Select Your Role</Text>
 
@@ -64,7 +60,7 @@ const styles = StyleSheet.create({
   container: {
     width: "80%",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent white background
+    backgroundColor: colors.white, // Slightly transparent white background
     borderRadius: 10,
     padding: 20,
     elevation: 5, // For shadow on Android

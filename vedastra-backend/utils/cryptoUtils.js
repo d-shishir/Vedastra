@@ -1,19 +1,21 @@
 const crypto = require("crypto");
 
-// Generate a key pair using Diffie-Hellman
+// Generate ECDH key pair
 const generateKeyPair = () => {
-  const dh = crypto.createDiffieHellman(2048);
-  const publicKey = dh.generateKeys("hex");
-  const privateKey = dh.getPrivateKey("hex");
-  return { publicKey, privateKey, dh };
+  const ecdh = crypto.createECDH("secp256k1");
+  ecdh.generateKeys();
+  return {
+    publicKey: ecdh.getPublicKey("hex"),
+    privateKey: ecdh.getPrivateKey("hex"),
+    ecdh,
+  };
 };
 
-// Derive a shared secret using Diffie-Hellman
 const deriveSecret = (privateKey, publicKey) => {
-  const dh = crypto.createDiffieHellman(2048);
-  dh.setPrivateKey(Buffer.from(privateKey, "hex"));
-  const secret = dh.computeSecret(Buffer.from(publicKey, "hex"), "hex");
-  return secret;
+  const ecdh = crypto.createECDH("secp256k1");
+  ecdh.setPrivateKey(Buffer.from(privateKey, "hex"));
+  const secret = ecdh.computeSecret(Buffer.from(publicKey, "hex"), "hex");
+  return secret.slice(0, 32); // Ensure the secret is 32 bytes long for AES-256
 };
 
 // Encrypt a message using the shared secret
@@ -32,16 +34,25 @@ const encryptMessage = (message, secret) => {
   };
 };
 
-// Decrypt a message using the shared secret
 const decryptMessage = (encryptedMessage, secret, iv) => {
-  const decipher = crypto.createDecipheriv(
-    "aes-256-cbc",
-    Buffer.from(secret, "hex"),
-    Buffer.from(iv, "hex")
-  );
-  let decrypted = decipher.update(encryptedMessage, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-  return decrypted;
+  try {
+    console.log("Decrypting with:");
+    console.log("Encrypted message:", encryptedMessage);
+    console.log("Secret:", secret);
+    console.log("IV:", iv);
+
+    const decipher = crypto.createDecipheriv(
+      "aes-256-cbc",
+      Buffer.from(secret, "hex"),
+      Buffer.from(iv, "hex")
+    );
+    let decrypted = decipher.update(encryptedMessage, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch (error) {
+    console.error("Decryption error:", error);
+    throw error;
+  }
 };
 
 module.exports = {
