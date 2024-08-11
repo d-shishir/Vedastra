@@ -9,6 +9,8 @@ import {
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { colors } from "../../utils/colors";
+import { fonts } from "../../utils/fonts";
 
 const AstrologerConsultationScreen = ({ navigation }) => {
   const [consultations, setConsultations] = useState([]);
@@ -52,8 +54,10 @@ const AstrologerConsultationScreen = ({ navigation }) => {
   const renderConsultationItem = ({ item }) => (
     <View style={styles.consultationItem}>
       <Text style={styles.consultationTitle}>User: {item.userId.name}</Text>
-      <Text>Scheduled At: {new Date(item.scheduledAt).toLocaleString()}</Text>
-      <Text>Status: {item.status}</Text>
+      <Text style={styles.consultationText}>
+        {new Date(item.scheduledAt).toLocaleString()}
+      </Text>
+      <Text style={styles.consultationText}>Status: {item.status}</Text>
       {item.status === "scheduled" && (
         <TouchableOpacity
           style={styles.cancelButton}
@@ -155,38 +159,34 @@ const styles = StyleSheet.create({
   },
   consultationItem: {
     padding: 16,
-    backgroundColor: "#ffffff",
-    marginBottom: 10,
+    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: "black",
+    marginBottom: 10,
   },
-  consultationTitle: {
+  consultationText: {
     fontSize: 18,
-    fontWeight: "bold",
+    color: "black",
     marginBottom: 8,
   },
-  cancelButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#dc3545",
-    borderRadius: 5,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
+  consultationTitle: {
+    fontSize: 24,
+    color: "black",
+    marginBottom: 8,
+    fontWeight: "bold",
   },
   chatButton: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#007bff",
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 5,
     alignItems: "center",
   },
   chatButtonText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 16,
+    fontFamily: fonts.SemiBold,
   },
 });
 

@@ -2,20 +2,27 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  Button,
   StyleSheet,
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
+  ScrollView,
   Switch,
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
-import { removeToken } from "../../utils/tokenStorage";
+import { colors } from "../../utils/colors";
+import { fonts } from "../../utils/fonts";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const AstrologerHomeScreen = ({ navigation }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAvailable, setIsAvailable] = useState(false);
   const [liveConsultations, setLiveConsultations] = useState([]);
+  const [error, setError] = useState(null);
 
   const fetchProfile = async () => {
     try {
@@ -24,6 +31,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
       setIsAvailable(response.data.isAvailable);
     } catch (error) {
       console.error("Fetch profile error:", error);
+      setError("Failed to fetch profile data.");
     } finally {
       setLoading(false);
     }
@@ -34,19 +42,18 @@ const AstrologerHomeScreen = ({ navigation }) => {
       const response = await axiosInstance.get("/consultations/live");
       setLiveConsultations(response.data);
     } catch (error) {
-      console.error(
-        "Fetch live consultations error:",
-        error.response ? error.response.data : error.message
-      );
+      console.error("Fetch live consultations error:", error);
+      setError("Failed to fetch live consultations.");
     }
   };
 
   const handleLogout = async () => {
     try {
-      await removeToken();
+      await AsyncStorage.removeItem("token");
       navigation.navigate("AstrologerLogin");
     } catch (error) {
       console.error("Logout error:", error);
+      setError("Failed to log out.");
     }
   };
 
@@ -58,6 +65,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
       setIsAvailable(!isAvailable);
     } catch (error) {
       console.error("Error updating availability:", error);
+      setError("Failed to update availability.");
     }
   };
 
@@ -69,7 +77,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color="#007bff" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loaderText}>Loading profile...</Text>
       </View>
     );
@@ -78,7 +86,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
   if (!profile) {
     return (
       <View style={styles.container}>
-        <Text style={styles.header}>No profile data available.</Text>
+        <Text style={styles.errorText}>No profile data available.</Text>
       </View>
     );
   }
@@ -98,7 +106,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
 
   const renderConsultationItem = ({ item }) => (
     <View style={styles.consultationItem}>
-      <Text style={styles.consultationText}>Consultation ID: {item._id}</Text>
+      <Text style={styles.consultationText}>{item.userId.name}</Text>
       <TouchableOpacity
         style={styles.chatButton}
         onPress={() =>
@@ -109,9 +117,19 @@ const AstrologerHomeScreen = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
 
-  const renderProfileDetails = () => (
-    <View style={styles.profileContainer}>
+  return (
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity style={styles.backButtonWrapper} onPress={handleGoBack}>
+        <Ionicons
+          name={"arrow-back-outline"}
+          color={colors.primary}
+          size={25}
+        />
+      </TouchableOpacity>
       <Text style={styles.header}>Welcome, {name}</Text>
 
       <View style={styles.profileSection}>
@@ -128,21 +146,24 @@ const AstrologerHomeScreen = ({ navigation }) => {
         <View style={styles.toggleContainer}>
           <Text style={styles.detailText}>Available for consultations:</Text>
           <Switch
+            style={styles.switch}
             value={isAvailable}
             onValueChange={handleToggleAvailability}
           />
         </View>
       </View>
 
-      <View style={styles.profileSection}>
+      {/* <View style={styles.profileSection}>
         <Text style={styles.sectionTitle}>Ratings</Text>
         <Text style={styles.detailText}>Average Rating: {averageRating}</Text>
         <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
-      </View>
+      </View> */}
 
       <View style={styles.profileSection}>
         <Text style={styles.sectionTitle}>Live Consultations</Text>
-        {liveConsultations.length === 0 ? (
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : liveConsultations.length === 0 ? (
           <Text>No live consultations at the moment.</Text>
         ) : (
           <FlatList
@@ -161,22 +182,13 @@ const AstrologerHomeScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Upcoming Consultations</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.button, styles.logoutButton]}
         onPress={handleLogout}
       >
         <Text style={[styles.buttonText, styles.logoutButtonText]}>Logout</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  return (
-    <FlatList
-      data={[{ key: "profile" }]}
-      renderItem={renderProfileDetails}
-      keyExtractor={(item) => item.key}
-      contentContainerStyle={styles.container}
-    />
+      </TouchableOpacity> */}
+    </SafeAreaView>
   );
 };
 
@@ -185,66 +197,51 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.white,
+  },
+  backButtonWrapper: {
+    height: 40,
+    width: 40,
+    backgroundColor: colors.accent,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loaderText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#6c757d",
+    color: "black",
+    fontFamily: fonts.Regular,
   },
   container: {
-    flexGrow: 1,
-    padding: 16,
-    backgroundColor: "#f8f9fa",
+    flex: 1,
+    padding: 20,
+    backgroundColor: colors.white,
+    justifyContent: "flex-start",
   },
-  profileContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 8,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+  switch: {
+    marginStart: 10,
   },
   header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#343a40",
-    marginBottom: 16,
+    fontSize: 32,
+    color: colors.primary,
+    fontFamily: fonts.SemiBold,
+    marginVertical: 20,
   },
   profileSection: {
     marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#495057",
+    fontFamily: fonts.SemiBold,
+    color: colors.primary,
     marginBottom: 8,
   },
   detailText: {
     fontSize: 16,
-    color: "#495057",
+    color: "black",
+    fontFamily: fonts.Light,
     marginBottom: 4,
-  },
-  button: {
-    backgroundColor: "#007bff",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    alignItems: "center",
-  },
-  buttonText: {
-    fontSize: 16,
-    color: "#ffffff",
-    fontWeight: "500",
-  },
-  logoutButton: {
-    backgroundColor: "#dc3545",
-  },
-  logoutButtonText: {
-    color: "#ffffff",
   },
   toggleContainer: {
     flexDirection: "row",
@@ -256,27 +253,53 @@ const styles = StyleSheet.create({
   },
   consultationItem: {
     padding: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: "black",
     marginBottom: 10,
   },
   consultationText: {
-    fontSize: 16,
-    color: "#495057",
+    fontSize: 24,
+    color: "black",
     marginBottom: 8,
   },
   chatButton: {
-    backgroundColor: "#007bff",
+    backgroundColor: colors.primary,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 5,
     alignItems: "center",
   },
   chatButtonText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 16,
+    fontFamily: fonts.SemiBold,
+  },
+  button: {
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginVertical: 12,
+    alignItems: "center",
+  },
+  buttonText: {
+    fontSize: 16,
+    color: colors.white,
+    fontFamily: fonts.SemiBold,
+  },
+  logoutButton: {
+    backgroundColor: colors.accent,
+  },
+  logoutButtonText: {
+    color: colors.white,
+  },
+  errorText: {
+    color: colors.accent,
+    fontSize: 16,
+    marginTop: 10,
+    fontFamily: fonts.Regular,
   },
 });
 

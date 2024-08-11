@@ -40,7 +40,7 @@ const UserLoginScreen = () => {
       });
 
       await setAuthData("user", meResponse.data);
-      navigation.navigate("UserHome");
+      navigation.navigate("UserTabs");
     } catch (error) {
       console.error("Login error:", error);
       Alert.alert("Error", "Invalid credentials or user ID not found");

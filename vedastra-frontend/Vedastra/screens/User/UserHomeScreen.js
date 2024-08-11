@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "../../api/axiosInstance";
+import { colors } from "../../utils/colors";
+import { fonts } from "../../utils/fonts";
 
 const HomeScreen = ({ navigation }) => {
   const [horoscopeText, setHoroscopeText] = useState("");
@@ -143,7 +145,7 @@ const HomeScreen = ({ navigation }) => {
       <Text style={styles.header}>Welcome to Home Screen</Text>
       <Text style={styles.header}>Today's Horoscope!</Text>
       {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color={colors.primary} />
       ) : (
         <Text style={styles.horoscopeText}>{horoscopeText}</Text>
       )}
@@ -160,13 +162,15 @@ const HomeScreen = ({ navigation }) => {
           contentContainerStyle={styles.astrologerList}
         />
       )}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("ConsultationStatus")}
       >
         <Text style={styles.buttonText}>View My Consultations</Text>
-      </TouchableOpacity>
-      <Button title="Logout" onPress={handleLogout} color="#007bff" />
+      </TouchableOpacity> */}
+      {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity> */}
     </View>
   );
 };
@@ -175,48 +179,51 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: colors.white,
   },
   header: {
     fontSize: 24,
     marginBottom: 20,
-    fontWeight: "bold",
-    color: "#343a40",
+    fontFamily: fonts.SemiBold,
+    color: colors.primary,
   },
   horoscopeText: {
     fontSize: 16,
-    color: "#495057",
+    color: colors.secondary,
     marginBottom: 20,
+    fontFamily: fonts.Light,
   },
   astrologerList: {
     marginTop: 20,
   },
   astrologerItem: {
     padding: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: colors.white,
     marginBottom: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: colors.secondary,
   },
   astrologerName: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: fonts.SemiBold,
     marginBottom: 8,
+    color: colors.primary,
   },
   chatButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: "#007bff",
+    backgroundColor: colors.primary,
     borderRadius: 5,
     alignItems: "center",
   },
   chatButtonText: {
-    color: "#ffffff",
+    color: colors.white,
     fontSize: 16,
+    fontFamily: fonts.SemiBold,
   },
   button: {
-    backgroundColor: "#007bff",
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
@@ -225,13 +232,27 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    color: "#ffffff",
-    fontWeight: "500",
+    color: colors.white,
+    fontFamily: fonts.SemiBold,
+  },
+  logoutButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginVertical: 12,
+    alignItems: "center",
+  },
+  logoutText: {
+    fontSize: 16,
+    color: colors.white,
+    fontFamily: fonts.SemiBold,
   },
   errorText: {
-    color: "#dc3545",
+    color: colors.accent,
     fontSize: 16,
     marginTop: 10,
+    fontFamily: fonts.Regular,
   },
 });
 

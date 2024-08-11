@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
   profileIcon: {
     height: 40,
     width: 40,
-    backgroundColor: "gray",
+    backgroundColor: colors.accent,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",

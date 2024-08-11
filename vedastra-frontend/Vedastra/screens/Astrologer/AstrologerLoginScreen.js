@@ -45,7 +45,7 @@ const AstrologerLoginScreen = ({ navigation }) => {
       await setAuthData("astrologer", meResponse.data);
 
       // Navigate to Home screen
-      navigation.navigate("AstrologerHome");
+      navigation.navigate("AstrologerTabs");
     } catch (error) {
       console.error("Login error:", error);
       Alert.alert("Error", "Invalid credentials");

@@ -1,30 +1,159 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import { AuthContext, AuthProvider } from "../contexts/AuthContext"; // Import the AuthContext and AuthProvider
+import { AuthContext } from "../contexts/AuthContext";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
+// Import screens
 import OnboardingScreen from "../screens/OnboardingScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 
+// User screens
 import UserLoginScreen from "../screens/User/UserLoginScreen";
 import UserRegisterScreen from "../screens/User/UserRegistrationScreen";
 import UserHomeScreen from "../screens/User/UserHomeScreen";
-import BookingScreen from "../screens/User/BookingScreen";
 import ConsultationStatusScreen from "../screens/User/ConsultationStatusScreen";
 
+// Astrologer screens
 import AstrologerLoginScreen from "../screens/Astrologer/AstrologerLoginScreen";
 import AstrologerRegisterScreen from "../screens/Astrologer/AstrologerRegistrationScreen";
 import AstrologerHomeScreen from "../screens/Astrologer/AstrologerHomeScreen";
 import AstrologerConsultationScreen from "../screens/Astrologer/AstrologerConsultationScreen";
 
+// Commons screens
 import ChatScreen from "../screens/ChatScreen";
 import ChatProfileScreen from "../screens/ChatProfileScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import { colors } from "../utils/colors";
 
+// Create stack and tab navigators
 const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+const UserTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === "UserHome") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "ConsultationStatus") {
+            iconName = focused ? "calendar" : "calendar-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: colors.accent,
+        inactiveTintColor: "gray",
+      }}
+    >
+      <Tab.Screen name="UserHome" component={UserHomeScreen} />
+      <Tab.Screen
+        name="ConsultationStatus"
+        component={ConsultationStatusScreen}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarVisible: false,
+        }}
+      />
+      <Tab.Screen
+        name="ChatProfile"
+        component={ChatProfileScreen}
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarVisible: false,
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+const AstrologerTabNavigator = () => {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === "AstrologerHome") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "UpcomingConsultations") {
+            iconName = focused ? "calendar" : "calendar-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: colors.accent,
+        inactiveTintColor: "gray",
+      }}
+    >
+      <Tab.Screen
+        name="AstrologerHome"
+        component={AstrologerHomeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name="UpcomingConsultations"
+        component={AstrologerConsultationScreen}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarVisible: false,
+        }}
+      />
+      <Tab.Screen
+        name="ChatProfile"
+        component={ChatProfileScreen}
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarVisible: false,
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
 
 const UserStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="UserLogin">
+    <Stack.Navigator>
       <Stack.Screen
         name="UserLogin"
         component={UserLoginScreen}
@@ -40,16 +169,15 @@ const UserStackNavigator = () => {
         component={ForgotPasswordScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="UserHome" component={UserHomeScreen} />
-      <Stack.Screen name="BookingScreen" component={BookingScreen} />
+      <Stack.Screen
+        name="UserTabs"
+        component={UserTabNavigator}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ConsultationStatus"
-        component={ConsultationStatusScreen}
       />
       <Stack.Screen
         name="ChatProfile"
@@ -62,7 +190,7 @@ const UserStackNavigator = () => {
 
 const AstrologerStackNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName="AstrologerLogin">
+    <Stack.Navigator>
       <Stack.Screen
         name="AstrologerLogin"
         component={AstrologerLoginScreen}
@@ -78,19 +206,9 @@ const AstrologerStackNavigator = () => {
         component={ForgotPasswordScreen}
         options={{ headerShown: false }}
       />
-      <Stack.Screen name="AstrologerHome" component={AstrologerHomeScreen} />
       <Stack.Screen
-        name="UpcomingConsultations"
-        component={AstrologerConsultationScreen}
-      />
-      <Stack.Screen
-        name="ChatScreen"
-        component={ChatScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ChatProfile"
-        component={ChatProfileScreen}
+        name="AstrologerTabs"
+        component={AstrologerTabNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
@@ -98,7 +216,7 @@ const AstrologerStackNavigator = () => {
 };
 
 const MainNavigator = () => {
-  const { userRole } = useContext(AuthContext); // Access user role from context
+  const { userRole } = useContext(AuthContext);
 
   const getInitialRoute = () => {
     if (userRole === "user") return "UserStack";
