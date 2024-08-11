@@ -38,6 +38,7 @@ const ConsultationSchema = new mongoose.Schema({
   astrologerPublicKey: {
     type: String, // Store the public key as a string
   },
+  sharedSecret: { type: String },
   createdAt: {
     type: Date,
     default: Date.now,

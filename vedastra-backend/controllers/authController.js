@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Astrologer = require("../models/Astrologer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
@@ -122,6 +123,30 @@ const authController = {
     } catch (err) {
       console.error(`Server Error: ${err.message}`);
       res.status(500).send("Server Error");
+    }
+  },
+  getProfileByRole: async (req, res) => {
+    const { role, id } = req.params;
+    console.log(`Fetching profile: Role=${role}, ID=${id}`);
+
+    try {
+      let profileData;
+      if (role === "user") {
+        profileData = await User.findById(id);
+      } else if (role === "astrologer") {
+        profileData = await Astrologer.findById(id);
+      } else {
+        return res.status(400).json({ msg: "Invalid profile type" });
+      }
+
+      if (!profileData) {
+        return res.status(404).json({ msg: "Profile not found" });
+      }
+
+      res.json(profileData);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      res.status(500).json({ msg: "Internal server error" });
     }
   },
 };

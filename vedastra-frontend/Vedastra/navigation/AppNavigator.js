@@ -18,6 +18,7 @@ import AstrologerHomeScreen from "../screens/Astrologer/AstrologerHomeScreen";
 import AstrologerConsultationScreen from "../screens/Astrologer/AstrologerConsultationScreen";
 
 import ChatScreen from "../screens/ChatScreen";
+import ChatProfileScreen from "../screens/ChatProfileScreen";
 
 const Stack = createStackNavigator();
 
@@ -41,10 +42,19 @@ const UserStackNavigator = () => {
       />
       <Stack.Screen name="UserHome" component={UserHomeScreen} />
       <Stack.Screen name="BookingScreen" component={BookingScreen} />
-      <Stack.Screen name="ChatScreen" component={ChatScreen} />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="ConsultationStatus"
         component={ConsultationStatusScreen}
+      />
+      <Stack.Screen
+        name="ChatProfile"
+        component={ChatProfileScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
@@ -73,7 +83,16 @@ const AstrologerStackNavigator = () => {
         name="UpcomingConsultations"
         component={AstrologerConsultationScreen}
       />
-      <Stack.Screen name="ChatScreen" component={ChatScreen} />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ChatProfile"
+        component={ChatProfileScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };

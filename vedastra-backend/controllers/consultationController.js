@@ -1,6 +1,6 @@
 const Consultation = require("../models/Consultation"); // Adjust the path as needed
 const mongoose = require("mongoose");
-const { generateKeyPair } = require("../utils/cryptoUtils");
+const cryptoUtils = require("../utils/cryptoUtils");
 
 // Get consultations for a user or astrologer
 const getConsultations = async (req, res) => {
@@ -69,24 +69,17 @@ const startConsultation = async (req, res) => {
         .json({ message: "astrologerId and communicationType are required" });
     }
 
-    // Generate key pairs for the user and astrologer
     const { publicKey: userPublicKey, privateKey: userPrivateKey } =
-      generateKeyPair();
-    const { publicKey: astrologerPublicKey } = generateKeyPair(); // Ensure correct key is used
+      cryptoUtils.generateKeyPair();
+    const { publicKey: astrologerPublicKey, privateKey: astrologerPrivateKey } =
+      cryptoUtils.generateKeyPair();
 
-    // Check for existing consultations
-    const now = new Date();
-    const liveConsultations = await Consultation.find({
-      userId,
-      scheduledAt: { $lte: now },
-      status: "live",
-    });
-
-    if (liveConsultations.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "You already have an active consultation." });
-    }
+    // Derive the shared secret
+    const sharedSecret = cryptoUtils.deriveSecret(
+      userPrivateKey,
+      astrologerPublicKey
+    );
+    const encryptedSharedSecret = sharedSecret.toString("hex"); // Store the shared secret in hex format
 
     const newConsultation = new Consultation({
       userId,
@@ -94,8 +87,9 @@ const startConsultation = async (req, res) => {
       scheduledAt: new Date(),
       status: "live",
       communicationType,
-      userPublicKey, // Ensure this field is being saved
-      astrologerPublicKey, // Ensure this field is being saved
+      userPublicKey,
+      astrologerPublicKey,
+      sharedSecret: encryptedSharedSecret, // Store it here
     });
 
     await newConsultation.save();
@@ -129,10 +123,36 @@ const getConsultationById = async (req, res) => {
   }
 };
 
+// End a consultation (set status to completed)
+const endConsultation = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Validate if id is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ msg: "Invalid ID format" });
+    }
+
+    const updatedConsultation = await Consultation.findByIdAndUpdate(
+      id,
+      { status: "completed" },
+      { new: true }
+    );
+    if (!updatedConsultation) {
+      return res.status(404).send("Consultation not found");
+    }
+    res.status(200).json(updatedConsultation);
+  } catch (error) {
+    console.error("Error ending consultation:", error);
+    res.status(500).send("Error ending consultation");
+  }
+};
+
 module.exports = {
   getConsultations,
   updateConsultationStatus,
   getLiveConsultations,
   startConsultation,
   getConsultationById,
+  endConsultation,
 };

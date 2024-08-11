@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Button,
+  Platform,
 } from "react-native";
+import { KeyboardAvoidingView } from "react-native";
 import io from "socket.io-client";
 import axiosInstance from "../api/axiosInstance";
 import { useRoute } from "@react-navigation/native";
@@ -16,6 +18,9 @@ import { useAuth } from "../contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import UUID from "react-native-uuid"; // Ensure you have react-native-uuid installed
 import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { colors } from "../utils/colors";
 
 const socket = io("http://192.168.1.64:5000"); // Replace with your actual server URL
 
@@ -26,12 +31,34 @@ const ChatScreen = ({ navigation }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [consultationDetails, setConsultationDetails] = useState(null);
+  const [chatExists, setChatExists] = useState(false); // To track if chat exists
   const { userRole, userId, astrologerId } = useAuth();
   const user = {
     _id: userRole === "user" ? userId : astrologerId,
     role: userRole,
   };
+  const flatListRef = useRef(null); // Create a ref for FlatList
 
+  const handleGoBack = () => {
+    navigation.goBack();
+  };
+  // Set up socket connection and listeners
+  useEffect(() => {
+    const handleReceiveMessage = (message) => {
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+
+    socket.emit("joinRoom", consultationId);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.emit("leaveRoom", consultationId);
+    };
+  }, [consultationId]);
+
+  // Fetch consultation details
   useEffect(() => {
     const fetchConsultationDetails = async () => {
       try {
@@ -39,44 +66,47 @@ const ChatScreen = ({ navigation }) => {
           `/consultations/${consultationId}`
         );
         setConsultationDetails(response.data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching consultation details:", error.message);
+        setLoading(false);
       }
     };
 
     fetchConsultationDetails();
   }, [consultationId]);
 
+  // Fetch messages after socket setup
   useEffect(() => {
     const fetchMessages = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `/chats/${consultationId}/messages`
-        );
-        setMessages(response.data);
-      } catch (error) {
-        console.error("Error fetching messages:", error.message);
-      } finally {
-        setLoading(false);
+      if (consultationDetails && consultationDetails.status === "live") {
+        try {
+          const response = await axiosInstance.get(
+            `/chats/${consultationId}/messages`
+          );
+          setMessages(response.data);
+          setChatExists(true);
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            setChatExists(false);
+            setLoading(false);
+          } else {
+            console.error("Error fetching messages:", error.message);
+            setLoading(false);
+          }
+        }
       }
     };
 
     fetchMessages();
-  }, [consultationId]);
+  }, [consultationDetails]);
 
+  // Scroll to end after messages are fetched
   useEffect(() => {
-    socket.on("receiveMessage", (message) => {
-      // console.log("Received message:", message); // Debug received message
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    socket.emit("joinRoom", consultationId);
-
-    return () => {
-      socket.off("receiveMessage");
-      socket.emit("leaveRoom", consultationId);
-    };
-  }, [consultationId]);
+    if (!loading && consultationDetails?.status === "live") {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [messages, loading]);
 
   const handleSendMessage = async () => {
     if (newMessage.trim() && consultationDetails && user) {
@@ -109,6 +139,7 @@ const ChatScreen = ({ navigation }) => {
         sentMessage.receiverType = receiverType;
 
         setMessages((prevMessages) => [...prevMessages, sentMessage]);
+        setChatExists(true); // Ensure chatExists is true after sending first message
 
         socket.emit("sendMessage", {
           consultationId,
@@ -130,7 +161,7 @@ const ChatScreen = ({ navigation }) => {
   const endConsultation = async () => {
     try {
       await axiosInstance.patch(`/consultations/${consultationId}/end`);
-      navigation.navigate("AstrologerHomeScreen");
+      navigation.goBack();
     } catch (error) {
       console.error("Error ending consultation:", error.message);
     }
@@ -140,7 +171,27 @@ const ChatScreen = ({ navigation }) => {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#007bff" />
-        <Text style={styles.loaderText}>Loading messages...</Text>
+        <Text style={styles.loaderText}>Loading consultation details...</Text>
+      </View>
+    );
+  }
+
+  if (!consultationDetails) {
+    return (
+      <View style={styles.noConsultationContainer}>
+        <Text style={styles.noConsultationText}>
+          No consultation details found.
+        </Text>
+      </View>
+    );
+  }
+
+  if (consultationDetails.status !== "live") {
+    return (
+      <View style={styles.noConsultationContainer}>
+        <Text style={styles.noConsultationText}>
+          Consultation has not started yet.
+        </Text>
       </View>
     );
   }
@@ -149,8 +200,7 @@ const ChatScreen = ({ navigation }) => {
     const isUserMessage = item.senderId === user._id;
 
     if (!item._id || !item.message) {
-      // console.warn("Message missing _id or message text:", item);
-      return null;
+      return null; // Skip rendering if message ID or content is missing
     }
 
     return (
@@ -175,17 +225,35 @@ const ChatScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.navbar}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate("ProfileScreen", {
-              userId: consultationDetails.userId,
-            })
-          }
-        >
-          <Icon name="person" size={30} color="#007bff" />
-        </TouchableOpacity>
+        <View style={styles.navitem}>
+          <TouchableOpacity
+            style={styles.backButtonWrapper}
+            onPress={handleGoBack}
+          >
+            <Ionicons
+              name={"arrow-back-outline"}
+              color={colors.primary}
+              size={25}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("ChatProfile", {
+                id:
+                  userRole === "user"
+                    ? consultationDetails.astrologerId
+                    : consultationDetails.userId,
+                type: userRole === "user" ? "astrologer" : "user",
+              })
+            }
+            style={styles.profileIcon}
+          >
+            <Icon name="person" size={30} color="#007bff" />
+          </TouchableOpacity>
+        </View>
+
         <Button
           title="End Consultation"
           onPress={endConsultation}
@@ -193,25 +261,43 @@ const ChatScreen = ({ navigation }) => {
         />
       </View>
 
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={(item) => item._id.toString()} // Ensure unique keys
-        contentContainerStyle={styles.messageList}
-      />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "undefined"}
+        style={styles.container}
+      >
+        {chatExists ? (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => Math.random()}
+            // inverted={-1}
+            contentContainerStyle={styles.messageList}
+          />
+        ) : (
+          <View style={styles.noMessagesContainer}>
+            <Text style={styles.noMessagesText}>
+              No messages yet. Start the conversation!
+            </Text>
+          </View>
+        )}
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.textInput}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message..."
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.textInput}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            placeholder="Type a message..."
+          />
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={handleSendMessage}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -220,6 +306,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f8f9fa",
     justifyContent: "space-between",
+  },
+  backButtonWrapper: {
+    height: 40,
+    width: 40,
+    backgroundColor: colors.accent,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   navbar: {
     flexDirection: "row",
@@ -230,9 +324,19 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ced4da",
     backgroundColor: "#ffffff",
   },
+  navitem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
+  },
   profileIcon: {
-    width: 30,
-    height: 30,
+    height: 40,
+    width: 40,
+    backgroundColor: "gray",
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginStart: 5,
   },
   loaderContainer: {
     flex: 1,
@@ -242,6 +346,25 @@ const styles = StyleSheet.create({
   },
   loaderText: {
     marginTop: 10,
+    fontSize: 16,
+    color: "#6c757d",
+  },
+  noConsultationContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f8f9fa",
+  },
+  noConsultationText: {
+    fontSize: 16,
+    color: "#6c757d",
+  },
+  noMessagesContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noMessagesText: {
     fontSize: 16,
     color: "#6c757d",
   },

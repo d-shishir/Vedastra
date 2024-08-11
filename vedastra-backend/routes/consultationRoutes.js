@@ -4,7 +4,8 @@ const {
   updateConsultationStatus,
   getLiveConsultations,
   startConsultation,
-  getConsultationById, // Import the new function
+  getConsultationById,
+  endConsultation,
 } = require("../controllers/consultationController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -20,5 +21,6 @@ router.get("/:id", authMiddleware, getConsultationById); // Add this route
 // Other routes
 router.get("/", authMiddleware, getConsultations);
 router.patch("/:id/status", authMiddleware, updateConsultationStatus);
+router.patch("/:id/end", authMiddleware, endConsultation);
 
 module.exports = router;

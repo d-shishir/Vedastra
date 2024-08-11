@@ -18,4 +18,13 @@ router.post("/login", authController.loginUser);
 // @access  Private
 router.get("/me", authMiddleware, authController.getUserProfile);
 
+// @route   GET api/auth/profile/:role/:id
+// @desc    Get profile based on role
+// @access  Private
+router.get(
+  "/profile/:role/:id",
+  authMiddleware,
+  authController.getProfileByRole
+);
+
 module.exports = router;
