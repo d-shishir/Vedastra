@@ -2,6 +2,8 @@ const Astrologer = require("../models/Astrologer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { uploadDocument } = require("../middlewares/uploadMiddleware"); // Middleware to handle file uploads
+const Review = require("../models/Review");
+const User = require("../models/User");
 
 // Astrologer registration
 exports.registerAstrologer = async (req, res) => {
@@ -121,9 +123,9 @@ exports.getAllAstrologers = async (req, res) => {
 // Get astrologer by ID
 exports.getAstrologerById = async (req, res) => {
   try {
-    const astrologer = await Astrologer.findById(req.params.id).select(
-      "-password"
-    );
+    const astrologer = await Astrologer.findById(req.params.id)
+      .select("-password")
+      .populate("reviews");
 
     if (!astrologer) {
       return res.status(404).json({ msg: "Astrologer not found" });
@@ -187,5 +189,125 @@ exports.updateVerificationStatus = async (req, res) => {
   } catch (error) {
     console.error("Error updating verification status:", error);
     res.status(500).send("Error updating verification status");
+  }
+};
+
+// Add or update a review
+exports.addReview = async (req, res) => {
+  try {
+    const { astrologerId, rating, comment } = req.body;
+    console.log("Received review data:", req.body); // Log request body
+
+    const userId = req.user.id; // Ensure userId is correctly set
+
+    if (!astrologerId || !rating || !comment) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    // Fetch the user's details to get their name
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+    const userName = user.name;
+
+    // Check if the user has already reviewed this astrologer
+    let review = await Review.findOne({
+      astrologer: astrologerId,
+      user: userId,
+    });
+
+    if (review) {
+      // Update the existing review
+      review.rating = rating;
+      review.comment = comment;
+      review.userName = userName; // Ensure userName is updated
+      await review.save();
+    } else {
+      // Create a new review
+      review = new Review({
+        astrologer: astrologerId,
+        user: userId,
+        userName, // Add userName to the review
+        rating,
+        comment,
+      });
+      await review.save();
+
+      // Add the new review to the astrologer's reviews
+      const astrologer = await Astrologer.findById(astrologerId);
+      if (!astrologer) {
+        return res.status(404).json({ msg: "Astrologer not found" });
+      }
+
+      astrologer.reviews.push(review._id);
+      astrologer.ratings.reviewsCount += 1;
+      astrologer.ratings.average =
+        (astrologer.ratings.average * (astrologer.ratings.reviewsCount - 1) +
+          rating) /
+        astrologer.ratings.reviewsCount;
+
+      await astrologer.save();
+    }
+
+    // Update astrologer's ratings
+    const astrologer = await Astrologer.findById(astrologerId);
+    if (!astrologer) {
+      return res.status(404).json({ msg: "Astrologer not found" });
+    }
+
+    astrologer.ratings.average =
+      astrologer.ratings.reviewsCount === 0
+        ? rating
+        : (astrologer.ratings.average * (astrologer.ratings.reviewsCount - 1) +
+            rating) /
+          astrologer.ratings.reviewsCount;
+
+    await astrologer.save();
+
+    res.status(201).json({
+      msg: "Review added or updated successfully",
+      ratings: astrologer.ratings,
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
+  }
+};
+
+// Get reviews and ratings of an astrologer
+exports.getReviewsAndRatings = async (req, res) => {
+  try {
+    const astrologerId = req.params.id;
+
+    // Log request to ensure correct astrologerId
+    console.log("Fetching reviews for astrologerId:", astrologerId);
+
+    const astrologer = await Astrologer.findById(astrologerId).populate({
+      path: "reviews",
+      populate: {
+        path: "user",
+        select: "name",
+      },
+    });
+
+    // Log the retrieved astrologer and reviews
+    console.log("Astrologer data:", astrologer);
+    console.log("Reviews:", astrologer.reviews);
+
+    if (!astrologer) {
+      return res.status(404).json({ msg: "Astrologer not found" });
+    }
+
+    const reviews = astrologer.reviews.map((review) => ({
+      ...review.toObject(),
+      userName: review.user.name,
+    }));
+    const ratings = astrologer.ratings;
+
+    res.json({ reviews, ratings });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server Error");
   }
 };

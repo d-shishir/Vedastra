@@ -28,6 +28,14 @@ router.get("/me", authMiddleware, astrologerController.getAstrologerProfile);
 // @access  Public
 router.get("/", astrologerController.getAllAstrologers);
 
+// @route   POST /api/astrologers/:id/reviews
+// @desc    Add a review for an astrologer
+// @access  Private
+router.post("/:id/reviews", authMiddleware, astrologerController.addReview);
+
+// Route to get reviews and ratings of an astrologer
+router.get("/:id/reviews", astrologerController.getReviewsAndRatings);
+
 // @route   GET api/astrologers/:id
 // @desc    Get astrologer by ID
 // @access  Public

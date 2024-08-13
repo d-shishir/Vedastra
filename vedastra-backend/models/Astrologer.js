@@ -31,13 +31,14 @@ const AstrologerSchema = new Schema({
     },
   },
   document: {
-    type: String, // Add this field to store the path of the uploaded document
+    type: String,
     default: null,
   },
   verified: {
     type: Boolean,
-    default: false, // Default to false until verified
+    default: false,
   },
+  reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }], // Reference to reviews
 });
 
 module.exports = mongoose.model("Astrologer", AstrologerSchema);

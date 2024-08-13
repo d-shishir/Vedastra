@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
-  ScrollView,
   Switch,
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
@@ -16,6 +15,7 @@ import { fonts } from "../../utils/fonts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { useFocusEffect } from "@react-navigation/native";
 
 const AstrologerHomeScreen = ({ navigation }) => {
   const [profile, setProfile] = useState(null);
@@ -69,10 +69,13 @@ const AstrologerHomeScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchProfile();
-    fetchLiveConsultations();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      fetchProfile();
+      fetchLiveConsultations();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -117,6 +120,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
       </TouchableOpacity>
     </View>
   );
+
   const handleGoBack = () => {
     navigation.goBack();
   };
