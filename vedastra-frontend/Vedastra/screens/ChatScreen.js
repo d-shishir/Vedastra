@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -16,12 +16,11 @@ import axiosInstance from "../api/axiosInstance";
 import { useRoute } from "@react-navigation/native";
 import { useAuth } from "../contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import UUID from "react-native-uuid";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import UUID from "react-native-uuid"; // Ensure you have react-native-uuid installed
+import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../utils/colors";
-import { useFocusEffect } from "@react-navigation/native";
 
 const socket = io("http://192.168.1.64:5000"); // Replace with your actual server URL
 
@@ -32,55 +31,19 @@ const ChatScreen = ({ navigation }) => {
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [consultationDetails, setConsultationDetails] = useState(null);
-  const [chatExists, setChatExists] = useState(false);
+  const [chatExists, setChatExists] = useState(false); // To track if chat exists
   const { userRole, userId, astrologerId } = useAuth();
   const user = {
     _id: userRole === "user" ? userId : astrologerId,
     role: userRole,
   };
-  const flatListRef = useRef(null);
+  const flatListRef = useRef(null); // Create a ref for FlatList
 
   const handleGoBack = () => {
     navigation.goBack();
   };
-
-  // Fetch consultation details
-  const fetchConsultationDetails = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/consultations/${consultationId}`
-      );
-      setConsultationDetails(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching consultation details:", error.message);
-      setLoading(false);
-    }
-  };
-
-  // Fetch messages
-  const fetchMessages = async () => {
-    if (consultationDetails && consultationDetails.status === "live") {
-      try {
-        const response = await axiosInstance.get(
-          `/chats/${consultationId}/messages`
-        );
-        setMessages(response.data);
-        setChatExists(true);
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          setChatExists(false);
-          setLoading(false);
-        } else {
-          console.error("Error fetching messages:", error.message);
-          setLoading(false);
-        }
-      }
-    }
-  };
-
   // Set up socket connection and listeners
-  const setupSocket = () => {
+  useEffect(() => {
     const handleReceiveMessage = (message) => {
       setMessages((prevMessages) => [...prevMessages, message]);
     };
@@ -93,19 +56,53 @@ const ChatScreen = ({ navigation }) => {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.emit("leaveRoom", consultationId);
     };
-  };
+  }, [consultationId]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      setLoading(true);
-      fetchConsultationDetails();
-      setupSocket();
-      fetchMessages();
-    }, [consultationId, consultationDetails])
-  );
+  // Fetch consultation details
+  useEffect(() => {
+    const fetchConsultationDetails = async () => {
+      try {
+        const response = await axiosInstance.get(
+          `/consultations/${consultationId}`
+        );
+        setConsultationDetails(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching consultation details:", error.message);
+        setLoading(false);
+      }
+    };
+
+    fetchConsultationDetails();
+  }, [consultationId]);
+
+  // Fetch messages after socket setup
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (consultationDetails && consultationDetails.status === "live") {
+        try {
+          const response = await axiosInstance.get(
+            `/chats/${consultationId}/messages`
+          );
+          setMessages(response.data);
+          setChatExists(true);
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            setChatExists(false);
+            setLoading(false);
+          } else {
+            console.error("Error fetching messages:", error.message);
+            setLoading(false);
+          }
+        }
+      }
+    };
+
+    fetchMessages();
+  }, [consultationDetails]);
 
   // Scroll to end after messages are fetched
-  React.useEffect(() => {
+  useEffect(() => {
     if (!loading && consultationDetails?.status === "live") {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
@@ -135,21 +132,21 @@ const ChatScreen = ({ navigation }) => {
         );
 
         const sentMessage = response.data;
-        sentMessage._id = UUID.v4();
+        sentMessage._id = UUID.v4(); // Generate UUID using react-native-uuid
         sentMessage.senderId = senderId;
         sentMessage.receiverId = receiverId;
         sentMessage.senderType = senderType;
         sentMessage.receiverType = receiverType;
 
         setMessages((prevMessages) => [...prevMessages, sentMessage]);
-        setChatExists(true);
+        setChatExists(true); // Ensure chatExists is true after sending first message
 
         socket.emit("sendMessage", {
           consultationId,
           message: newMessage,
           sender: senderId,
           receiver: receiverId,
-          _id: sentMessage._id,
+          _id: sentMessage._id, // Ensure ID is included
           senderType,
           receiverType,
         });
@@ -203,7 +200,7 @@ const ChatScreen = ({ navigation }) => {
     const isUserMessage = item.senderId === user._id;
 
     if (!item._id || !item.message) {
-      return null;
+      return null; // Skip rendering if message ID or content is missing
     }
 
     return (
@@ -266,14 +263,15 @@ const ChatScreen = ({ navigation }) => {
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "undefined"}
-        style={styles.container}
+        style={styles.containerTwo}
       >
         {chatExists ? (
           <FlatList
             ref={flatListRef}
             data={messages}
             renderItem={renderMessage}
-            keyExtractor={(item) => item._id}
+            keyExtractor={(item) => Math.random()}
+            // inverted={-1}
             contentContainerStyle={styles.messageList}
           />
         ) : (
@@ -309,6 +307,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     justifyContent: "space-between",
   },
+  containerTwo: {
+    flex: 1,
+  },
+
   backButtonWrapper: {
     height: 40,
     width: 40,
@@ -319,10 +321,17 @@ const styles = StyleSheet.create({
   },
   navbar: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
     padding: 10,
-    backgroundColor: colors.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ced4da",
+    backgroundColor: "#ffffff",
+  },
+  navitem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-evenly",
   },
   profileIcon: {
     height: 40,
@@ -331,50 +340,28 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  sendButton: {
-    backgroundColor: colors.primary,
-    padding: 10,
-    borderRadius: 5,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sendButtonText: {
-    color: "white",
-    fontSize: 16,
-  },
-  textInput: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: "white",
-    borderRadius: 20,
-    marginRight: 10,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    padding: 10,
-    backgroundColor: "#f1f1f1",
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    marginStart: 5,
   },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f8f9fa",
   },
   loaderText: {
     marginTop: 10,
-    fontSize: 18,
-    color: "#007bff",
+    fontSize: 16,
+    color: "#6c757d",
   },
   noConsultationContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f8f9fa",
   },
   noConsultationText: {
-    fontSize: 18,
-    color: "#007bff",
+    fontSize: 16,
+    color: "#6c757d",
   },
   noMessagesContainer: {
     flex: 1,
@@ -382,35 +369,65 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   noMessagesText: {
-    fontSize: 18,
-    color: "#007bff",
+    fontSize: 16,
+    color: "#6c757d",
+  },
+  messageList: {
+    padding: 16,
+    flexGrow: 1,
   },
   messageContainer: {
+    marginBottom: 10,
+    borderRadius: 10,
     padding: 10,
-    margin: 5,
-    borderRadius: 5,
-    maxWidth: "75%",
+    maxWidth: "80%",
   },
   userMessage: {
-    backgroundColor: "#007bff",
     alignSelf: "flex-end",
+    backgroundColor: "#007bff", // Bluish color for user messages
   },
   astrologerMessage: {
-    backgroundColor: "#f1f1f1",
     alignSelf: "flex-start",
+    backgroundColor: "#e9ecef", // Gray color for received messages
   },
   messageText: {
     fontSize: 16,
-    color: "white",
   },
   userMessageText: {
-    color: "white",
+    color: "#ffffff", // White text for user messages
   },
   astrologerMessageText: {
-    color: "black",
+    color: "#333333", // Darker text color for received messages
   },
-  messageList: {
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 10,
+    borderTopWidth: 1,
+    borderColor: "#ced4da",
+    backgroundColor: "#ffffff",
+  },
+  textInput: {
+    flex: 1,
+    borderRadius: 20,
+    borderColor: "#ced4da",
+    borderWidth: 1,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: "#ffffff",
+    marginRight: 10,
+  },
+  sendButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sendButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
   },
 });
 

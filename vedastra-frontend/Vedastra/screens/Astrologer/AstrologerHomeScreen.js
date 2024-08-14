@@ -1,13 +1,12 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
-  Button,
-  StyleSheet,
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
   Switch,
+  StyleSheet,
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import { colors } from "../../utils/colors";
@@ -40,7 +39,11 @@ const AstrologerHomeScreen = ({ navigation }) => {
   const fetchLiveConsultations = async () => {
     try {
       const response = await axiosInstance.get("/consultations/live");
-      setLiveConsultations(response.data);
+      // Filter consultations to include only those related to the current astrologer
+      const filteredConsultations = response.data.filter(
+        (consultation) => consultation.astrologerId._id === profile._id
+      );
+      setLiveConsultations(filteredConsultations);
     } catch (error) {
       console.error("Fetch live consultations error:", error);
       setError("Failed to fetch live consultations.");
@@ -73,9 +76,15 @@ const AstrologerHomeScreen = ({ navigation }) => {
     useCallback(() => {
       setLoading(true);
       fetchProfile();
-      fetchLiveConsultations();
     }, [])
   );
+
+  // Fetch live consultations only after the profile is loaded
+  useEffect(() => {
+    if (profile) {
+      fetchLiveConsultations();
+    }
+  }, [profile]);
 
   if (loading) {
     return (

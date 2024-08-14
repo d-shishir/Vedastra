@@ -8,6 +8,8 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  FlatList,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
@@ -16,18 +18,33 @@ import axiosInstance from "../../api/axiosInstance";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
 import { SafeAreaView } from "react-native-safe-area-context";
+const specializationOptions = [
+  "Numerology",
+  "Marriage",
+  "Daily Horoscope",
+  "Personalized Readings",
+  "Career",
+  "Health",
+  "Finance",
+  "Family",
+  "Relationships",
+];
 
 const AstrologerRegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [specializations, setSpecializations] = useState("");
+  const [selectedSpecializations, setSelectedSpecializations] = useState([]);
   const [document, setDocument] = useState(null);
   const [secureEntry, setSecureEntry] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !specializations) {
-      return Alert.alert("Error", "Please fill in all fields.");
+    if (!name || !email || !password || selectedSpecializations.length === 0) {
+      return Alert.alert(
+        "Error",
+        "Please fill in all fields and select at least one specialization."
+      );
     }
 
     try {
@@ -35,10 +52,7 @@ const AstrologerRegisterScreen = ({ navigation }) => {
       formData.append("name", name);
       formData.append("email", email);
       formData.append("password", password);
-      formData.append(
-        "specializations",
-        specializations.split(",").map((spec) => spec.trim())
-      );
+      formData.append("specializations", selectedSpecializations);
 
       if (document) {
         formData.append("document", {
@@ -88,6 +102,15 @@ const AstrologerRegisterScreen = ({ navigation }) => {
     }
   };
 
+  const toggleSpecialization = (specialization) => {
+    setSelectedSpecializations((prevSelected) => {
+      if (prevSelected.includes(specialization)) {
+        return prevSelected.filter((item) => item !== specialization);
+      } else {
+        return [...prevSelected, specialization];
+      }
+    });
+  };
   return (
     <SafeAreaView style={styles.container} keyboardShouldPersistTaps="handled">
       <TouchableOpacity
@@ -140,16 +163,16 @@ const AstrologerRegisterScreen = ({ navigation }) => {
             />
           </TouchableOpacity>
         </View>
-        <View style={styles.inputContainer}>
-          <Ionicons name="list-outline" size={30} color={colors.secondary} />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Specializations (comma-separated)"
-            placeholderTextColor={colors.secondary}
-            value={specializations}
-            onChangeText={setSpecializations}
-          />
-        </View>
+        <TouchableOpacity
+          style={styles.specializationButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.specializationText}>
+            {selectedSpecializations.length > 0
+              ? selectedSpecializations.join(", ")
+              : "Select Specializations"}
+          </Text>
+        </TouchableOpacity>
         <Button title="Upload Document (Optional)" onPress={pickDocument} />
         {document && (
           <Text style={styles.documentInfo}>
@@ -169,6 +192,47 @@ const AstrologerRegisterScreen = ({ navigation }) => {
           <Text style={styles.backToLoginText}>Back to Login</Text>
         </TouchableOpacity> */}
       </View>
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <FlatList
+              data={specializationOptions}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.option,
+                    selectedSpecializations.includes(item) &&
+                      styles.optionSelected,
+                  ]}
+                  onPress={() => toggleSpecialization(item)}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      selectedSpecializations.includes(item) &&
+                        styles.optionTextSelected,
+                    ]}
+                  >
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -242,6 +306,60 @@ const styles = StyleSheet.create({
     fontFamily: fonts.SemiBold,
     textAlign: "center",
     padding: 10,
+  },
+  specializationButton: {
+    borderWidth: 1,
+    borderColor: colors.secondary,
+    borderRadius: 100,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 8,
+    marginVertical: 10,
+    justifyContent: "center",
+  },
+  specializationText: {
+    fontFamily: fonts.Light,
+    color: colors.secondary,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+  },
+  option: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.secondary,
+  },
+  optionSelected: {
+    backgroundColor: colors.primary,
+  },
+  optionText: {
+    fontSize: 16,
+    fontFamily: fonts.Light,
+  },
+  optionTextSelected: {
+    color: colors.white,
+  },
+  closeButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: colors.white,
+    textAlign: "center",
+    fontSize: 16,
+    fontFamily: fonts.SemiBold,
   },
 });
 

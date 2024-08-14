@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -57,15 +58,24 @@ const HomeScreen = ({ navigation }) => {
   const fetchActiveConsultation = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      if (token) {
-        const response = await axiosInstance.get("/consultations/live", {
+      const userId = await AsyncStorage.getItem("userId");
+
+      if (token && userId) {
+        // Fetch all consultations
+        const response = await axiosInstance.get("/consultations", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const userId = await AsyncStorage.getItem("userId");
-        const userLiveConsultation = response.data.find(
-          (consultation) => consultation.userId._id === userId
+
+        // Find the user's active consultation with status "live"
+        const userLiveConsultations = response.data.filter(
+          (consultation) =>
+            consultation.userId._id === userId && consultation.status === "live"
         );
-        setActiveConsultation(userLiveConsultation || null);
+
+        // Assuming you want to display the first live consultation if multiple are found
+        setActiveConsultation(userLiveConsultations[0] || null);
+      } else {
+        throw new Error("Token or user ID is missing.");
       }
     } catch (error) {
       console.error("Fetch active consultation error:", error);
@@ -109,11 +119,16 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchHoroscope();
-    fetchAstrologers();
-    fetchActiveConsultation();
-  }, []);
+  fetchHoroscope();
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+
+      fetchAstrologers();
+      fetchActiveConsultation();
+    }, [])
+  );
 
   const handleLogout = async () => {
     try {
@@ -124,7 +139,6 @@ const HomeScreen = ({ navigation }) => {
       setError("Failed to log out.");
     }
   };
-
   const renderAstrologerItem = ({ item }) => (
     <View style={styles.astrologerItem}>
       <Text style={styles.astrologerName}>{item.name}</Text>
@@ -134,11 +148,20 @@ const HomeScreen = ({ navigation }) => {
         onPress={() => startConsultation(item._id)}
       >
         <Text style={styles.chatButtonText}>
-          {activeConsultation ? "Continue Chat" : "Let's Chat"}
+          {activeConsultation &&
+          activeConsultation.astrologerId._id === item._id
+            ? "Continue Chat"
+            : "Let's Chat"}
         </Text>
       </TouchableOpacity>
     </View>
   );
+
+  const filteredAstrologers = activeConsultation
+    ? astrologers.filter(
+        (astrologer) => astrologer._id === activeConsultation.astrologerId._id
+      )
+    : astrologers;
 
   return (
     <View style={styles.container}>
@@ -152,25 +175,16 @@ const HomeScreen = ({ navigation }) => {
       <Text style={styles.header}>Available Astrologers</Text>
       {error ? (
         <Text style={styles.errorText}>{error}</Text>
-      ) : astrologers.length === 0 ? (
+      ) : filteredAstrologers.length === 0 ? (
         <Text>No astrologers available</Text>
       ) : (
         <FlatList
-          data={astrologers}
+          data={filteredAstrologers}
           renderItem={renderAstrologerItem}
           keyExtractor={(item) => item._id.toString()}
           contentContainerStyle={styles.astrologerList}
         />
       )}
-      {/* <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("ConsultationStatus")}
-      >
-        <Text style={styles.buttonText}>View My Consultations</Text>
-      </TouchableOpacity> */}
-      {/* <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity> */}
     </View>
   );
 };

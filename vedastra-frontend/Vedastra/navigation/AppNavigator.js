@@ -48,6 +48,7 @@ const UserTabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarHideOnKeyboard: true,
       })}
       tabBarOptions={{
         activeTintColor: colors.accent,
@@ -105,6 +106,7 @@ const AstrologerTabNavigator = () => {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
+        tabBarHideOnKeyboard: true,
       })}
       tabBarOptions={{
         activeTintColor: colors.accent,

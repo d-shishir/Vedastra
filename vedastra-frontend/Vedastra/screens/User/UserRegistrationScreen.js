@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Modal,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axiosInstance from "../../api/axiosInstance";
@@ -21,6 +22,17 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
+const preferencesOptions = [
+  "Numerology",
+  "Marriage",
+  "Daily Horoscope",
+  "Personalized Readings",
+  "Career",
+  "Health",
+  "Finance",
+  "Family",
+  "Relationships",
+];
 
 const RegisterScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -35,6 +47,8 @@ const RegisterScreen = ({ navigation }) => {
   const [locationResults, setLocationResults] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [secureEntry, setSecureEntry] = useState(true);
+  const [preferences, setPreferences] = useState([]);
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
 
   const handleRegister = async () => {
     if (!name || !email || !password || !birthdate || !birthplace) {
@@ -64,7 +78,7 @@ const RegisterScreen = ({ navigation }) => {
       await storeToken(response.data.token);
 
       Alert.alert("Success", "Registered successfully!");
-      navigation.navigate("UserHome");
+      navigation.navigate("UserTabs");
     } catch (error) {
       console.error("Registration error:", error);
       if (error.response) {
@@ -74,6 +88,20 @@ const RegisterScreen = ({ navigation }) => {
         Alert.alert("Error", "Registration failed. Please try again later.");
       }
     }
+  };
+
+  const handlePreferenceSelect = (preference) => {
+    setPreferences((prevPreferences) => {
+      if (prevPreferences.includes(preference)) {
+        return prevPreferences.filter((item) => item !== preference);
+      } else {
+        return [...prevPreferences, preference];
+      }
+    });
+  };
+
+  const handlePreferencesSave = () => {
+    setShowPreferencesModal(false);
   };
 
   const handleDateChange = (event, selectedDate) => {
@@ -238,15 +266,51 @@ const RegisterScreen = ({ navigation }) => {
           )}
         </View>
         <View style={styles.inputContainer}>
-          <Ionicons name="image-outline" size={30} color={colors.secondary} />
-          <TextInput
+          <Ionicons name="list-outline" size={30} color={colors.secondary} />
+          <TouchableOpacity
             style={styles.textInput}
-            placeholder="Profile Picture URL"
-            placeholderTextColor={colors.secondary}
-            value={profilePicture}
-            onChangeText={setProfilePicture}
-          />
+            onPress={() => setShowPreferencesModal(true)}
+          >
+            <Text style={styles.textInputText}>
+              {preferences.length > 0
+                ? `Selected Preferences: ${preferences.join(", ")}`
+                : "Select Preferences"}
+            </Text>
+          </TouchableOpacity>
         </View>
+        {showPreferencesModal && (
+          <Modal
+            transparent
+            visible={showPreferencesModal}
+            animationType="slide"
+            onRequestClose={() => setShowPreferencesModal(false)}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Preferences</Text>
+                {preferencesOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={styles.preferenceItem}
+                    onPress={() => handlePreferenceSelect(option)}
+                  >
+                    <Text style={styles.preferenceText}>
+                      {preferences.includes(option) ? "✓ " : ""}
+                      {option}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handlePreferencesSave}
+                >
+                  <Text style={styles.modalButtonText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
+
         <TouchableOpacity
           style={styles.registerButtonWrapper}
           onPress={handleRegister}
@@ -318,6 +382,45 @@ const styles = StyleSheet.create({
     fontFamily: fonts.SemiBold,
     textAlign: "center",
     padding: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+    maxHeight: "70%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: fonts.SemiBold,
+    marginBottom: 10,
+  },
+  preferenceItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.secondary,
+  },
+  preferenceText: {
+    fontSize: 16,
+    fontFamily: fonts.Light,
+  },
+  modalButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+  modalButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    textAlign: "center",
+    fontFamily: fonts.SemiBold,
   },
 });
 
