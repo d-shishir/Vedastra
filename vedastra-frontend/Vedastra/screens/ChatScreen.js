@@ -89,11 +89,11 @@ const ChatScreen = ({ navigation }) => {
         } catch (error) {
           if (error.response && error.response.status === 404) {
             setChatExists(false);
-            setLoading(false);
           } else {
             console.error("Error fetching messages:", error.message);
-            setLoading(false);
           }
+        } finally {
+          setLoading(false);
         }
       }
     };
@@ -161,6 +161,15 @@ const ChatScreen = ({ navigation }) => {
   const endConsultation = async () => {
     try {
       await axiosInstance.patch(`/consultations/${consultationId}/end`);
+
+      // Leave the socket room
+      socket.emit("leaveRoom", consultationId);
+
+      // Clear messages and consultation details
+      setMessages([]);
+      setConsultationDetails(null);
+      setChatExists(false);
+
       navigation.goBack();
     } catch (error) {
       console.error("Error ending consultation:", error.message);
