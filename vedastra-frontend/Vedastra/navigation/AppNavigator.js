@@ -14,6 +14,7 @@ import UserLoginScreen from "../screens/User/UserLoginScreen";
 import UserRegisterScreen from "../screens/User/UserRegistrationScreen";
 import UserHomeScreen from "../screens/User/UserHomeScreen";
 import ConsultationStatusScreen from "../screens/User/ConsultationStatusScreen";
+import AstrologerDetailScreen from "../screens/AstrologerDetailScreen";
 
 // Astrologer screens
 import AstrologerLoginScreen from "../screens/Astrologer/AstrologerLoginScreen";
@@ -55,7 +56,13 @@ const UserTabNavigator = () => {
         inactiveTintColor: "gray",
       }}
     >
-      <Tab.Screen name="UserHome" component={UserHomeScreen} />
+      <Tab.Screen
+        name="UserHome"
+        component={UserHomeScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
       <Tab.Screen
         name="ConsultationStatus"
         component={ConsultationStatusScreen}
@@ -79,6 +86,15 @@ const UserTabNavigator = () => {
       <Tab.Screen
         name="ChatProfile"
         component={ChatProfileScreen}
+        options={{
+          headerShown: false,
+          tabBarButton: () => null,
+          tabBarVisible: false,
+        }}
+      />
+      <Tab.Screen
+        name="AstroDetail"
+        component={AstrologerDetailScreen}
         options={{
           headerShown: false,
           tabBarButton: () => null,

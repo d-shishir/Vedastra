@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const { uploadDocument } = require("../middlewares/uploadMiddleware"); // Middleware to handle file uploads
 const Review = require("../models/Review");
 const User = require("../models/User");
-const { recommendAstrologers } = require("../utils/recommendAstrologers");
+const astrologerRecommendation = require("../utils/recommendAstrologers");
 
 // Astrologer registration
 exports.registerAstrologer = async (req, res) => {
@@ -316,11 +316,17 @@ exports.getReviewsAndRatings = async (req, res) => {
 // Recommend astrologers to a user
 exports.recommendAstrologersToUser = async (req, res) => {
   try {
-    const userId = req.user._id; // Assuming the user is authenticated
+    const userId = req.query.userId; // Get userId from request body
+    console.log(userId);
 
-    const recommendedAstrologers = await recommendAstrologers(userId);
+    if (!userId) {
+      throw new Error("User ID is missing from the request body");
+    }
+
+    const recommendedAstrologers = await astrologerRecommendation(userId);
 
     res.json(recommendedAstrologers);
+    console.log(recommendedAstrologers);
   } catch (err) {
     console.error("Error recommending astrologers:", err);
     res.status(500).json({ message: "Server Error", error: err.message });

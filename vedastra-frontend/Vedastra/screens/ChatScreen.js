@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Button,
   Platform,
+  SafeAreaView,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native";
 import io from "socket.io-client";
@@ -18,7 +19,7 @@ import { useAuth } from "../contexts/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import UUID from "react-native-uuid"; // Ensure you have react-native-uuid installed
 import Icon from "react-native-vector-icons/MaterialIcons"; // Import the icon library
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../utils/colors";
 

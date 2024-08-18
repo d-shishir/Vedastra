@@ -1,89 +1,61 @@
-const User = require("../models/User");
-const Astrologer = require("../models/Astrologer");
-const Review = require("../models/Review");
 const mongoose = require("mongoose");
+const Astrologer = require("../models/Astrologer");
+const User = require("../models/User");
+const Review = require("../models/Review");
 
-const recommendAstrologers = async (userId) => {
+// Function to get recommendations for astrologers
+async function astrologerRecommendation(userId) {
   try {
-    console.log("start");
-    // Validate userId
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID format");
+    // Fetch the user details
+    const user = await User.findById(userId).populate("preferences");
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    // Fetch user
-    const user = await User.findById(userId);
-    if (!user) throw new Error("User not found");
-
-    // Fetch astrologers and populate reviews
+    // Find all astrologers
     const astrologers = await Astrologer.find().populate("reviews");
 
-    // Calculate content-based scores
-    const contentBasedScores = astrologers.map((astrologer) => {
-      const similarityScore = calculateSimilarity(
-        user.preferences,
-        astrologer.specializations
-      );
-      return { astrologer, score: similarityScore };
+    // Calculate ratings for each astrologer
+    const astrologerRatings = astrologers.map((astrologer) => {
+      const totalRatings = astrologer.reviews.length;
+      const averageRating =
+        totalRatings > 0
+          ? astrologer.reviews.reduce((sum, review) => sum + review.rating, 0) /
+            totalRatings
+          : 0;
+      return {
+        ...astrologer.toObject(),
+        ratings: {
+          ...astrologer.ratings,
+          average: averageRating,
+          reviewsCount: totalRatings,
+        },
+      };
     });
 
-    // Calculate collaborative scores
-    const collaborativeScores = await predictUserRatings(userId, astrologers);
+    // Rank astrologers based on user preferences and ratings
+    const recommendedAstrologers = astrologerRatings
+      .map((astrologer) => {
+        // Calculate a score based on user preferences and ratings
+        const preferenceScore = user.preferences.reduce(
+          (score, preference) =>
+            astrologer.specializations.includes(preference) ? score + 1 : score,
+          0
+        );
+        const ratingScore = astrologer.ratings.average;
 
-    // Combine scores and sort
-    const combinedScores = astrologers.map((astrologer, index) => {
-      const combinedScore =
-        0.5 * contentBasedScores[index].score +
-        0.5 * collaborativeScores[index];
-      return { astrologer, score: combinedScore };
-    });
+        return {
+          ...astrologer,
+          score: preferenceScore * 2 + ratingScore * 1, // Adjust weights as needed
+        };
+      })
+      .sort((a, b) => b.score - a.score); // Sort by score in descending order
 
-    return combinedScores
-      .sort((a, b) => b.score - a.score)
-      .map((item) => item.astrologer);
+    return recommendedAstrologers;
   } catch (error) {
-    console.error("Error recommending astrologers:", error);
+    console.error("Error recommending astrologers:", error.message);
     throw error;
   }
-};
+}
 
-// Calculate similarity score
-const calculateSimilarity = (preferences = {}, specializations = []) => {
-  const preferencesSet = new Set(
-    Object.keys(preferences).filter((key) => preferences[key])
-  );
-  const specializationsSet = new Set(specializations);
-
-  const intersection = new Set(
-    [...preferencesSet].filter((x) => specializationsSet.has(x))
-  );
-  const union = new Set([...preferencesSet, ...specializationsSet]);
-
-  return union.size === 0 ? 0 : intersection.size / union.size;
-};
-
-// Predict user ratings
-const predictUserRatings = async (userId, astrologers) => {
-  try {
-    const userRatings = await Review.find({ user: userId });
-    const ratingsMap = userRatings.reduce((map, review) => {
-      map[review.astrologer.toString()] = review.rating;
-      return map;
-    }, {});
-
-    return astrologers.map((astrologer) => {
-      console.log(astrologer._id);
-      const pastRating = ratingsMap[astrologer._id.toString()] || 0;
-      const overallAverage = astrologer.ratings?.average || 0;
-
-      return (pastRating + overallAverage) / 2;
-    });
-  } catch (error) {
-    console.error("Error predicting user ratings:", error);
-    throw error;
-  }
-};
-
-module.exports = {
-  recommendAstrologers,
-};
+module.exports = astrologerRecommendation;
