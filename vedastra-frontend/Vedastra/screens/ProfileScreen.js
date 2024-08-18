@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Image,
   TouchableOpacity,
-  Button,
+  Pressable,
 } from "react-native";
 import axiosInstance from "../api/axiosInstance";
 import { AuthContext } from "../contexts/AuthContext";
@@ -61,7 +61,7 @@ const ProfileScreen = ({ navigation }) => {
 
   if (error || !profileData) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>
           {error ? "Failed to load profile data" : "Profile data not found"}
         </Text>
@@ -100,70 +100,70 @@ const ProfileScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={styles.backButtonWrapper}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="arrow-back-outline" color={colors.primary} size={25} />
-      </TouchableOpacity>
-      <View style={styles.profilePictureContainer}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButtonWrapper}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back-outline" color="white" size={25} />
+        </TouchableOpacity>
+        <View style={styles.headerContent}>
+          <Text style={styles.name}>{name || "No name provided"}</Text>
+        </View>
         <Image
           source={{
             uri: profilePicture || "https://via.placeholder.com/120",
           }}
-          style={styles.profilePicture}
+          style={styles.avatar}
         />
       </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.nameText}>{name || "No name provided"}</Text>
-        <Text style={styles.emailText}>{email || "No email provided"}</Text>
-        {userRole === "user" && (
-          <>
-            <Text style={styles.birthText}>
-              Birthdate:{" "}
-              {birthdate
-                ? new Date(birthdate).toLocaleDateString()
-                : "No birthdate provided"}
-            </Text>
-            <Text style={styles.birthText}>
-              Birth Time: {birthTime || "No birth time provided"}
-            </Text>
-            <Text style={styles.birthText}>
-              Birthplace: {birthplace || "No birthplace provided"}
-            </Text>
-            <Text style={styles.preferencesText}>
-              Daily Horoscope: {preferences?.dailyHoroscope ? "Yes" : "No"}
-            </Text>
-            <Text style={styles.preferencesText}>
-              Personalized Readings:{" "}
-              {preferences?.personalizedReadings ? "Yes" : "No"}
-            </Text>
-          </>
-        )}
-        {userRole === "astrologer" && (
-          <>
-            <Text style={styles.specializationsText}>
-              Specializations:{" "}
-              {specializations?.join(", ") || "No specializations"}
-            </Text>
-            <Text style={styles.availabilityText}>
-              Availability: {isAvailable ? "Available" : "Not Available"}
-            </Text>
-            <Text style={styles.ratingsText}>
-              Average Rating: {ratings?.average || "No ratings"}
-            </Text>
-            <Text style={styles.ratingsText}>
-              Reviews Count: {ratings?.reviewsCount || "No reviews"}
-            </Text>
-          </>
-        )}
+      <View style={styles.body}>
+        <Pressable style={styles.infoContainer}>
+          {userRole === "user" && (
+            <>
+              <Text style={styles.infoText}>
+                Birthdate:{" "}
+                {birthdate
+                  ? new Date(birthdate).toLocaleDateString()
+                  : "No birthdate provided"}
+              </Text>
+              <Text style={styles.infoText}>
+                Birth Time: {birthTime || "No birth time provided"}
+              </Text>
+              <Text style={styles.infoText}>
+                Birthplace: {birthplace || "No birthplace provided"}
+              </Text>
+              <Text style={styles.infoText}>
+                Daily Horoscope: {preferences?.dailyHoroscope ? "Yes" : "No"}
+              </Text>
+              <Text style={styles.infoText}>
+                Personalized Readings:{" "}
+                {preferences?.personalizedReadings ? "Yes" : "No"}
+              </Text>
+            </>
+          )}
+          {userRole === "astrologer" && (
+            <>
+              <Text style={styles.infoText}>
+                Specializations:{" "}
+                {specializations?.join(", ") || "No specializations"}
+              </Text>
+              <Text style={styles.infoText}>
+                Availability: {isAvailable ? "Available" : "Not Available"}
+              </Text>
+              <Text style={styles.infoText}>
+                Average Rating: {ratings?.average || "No ratings"}
+              </Text>
+              <Text style={styles.infoText}>
+                Reviews Count: {ratings?.reviewsCount || "No reviews"}
+              </Text>
+            </>
+          )}
+        </Pressable>
+        <TouchableOpacity style={styles.btn} onPress={handleLogout}>
+          <Text style={styles.btnText}>Logout</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        style={[styles.button, styles.logoutButton]}
-        onPress={handleLogout}
-      >
-        <Text style={[styles.buttonText, styles.logoutButtonText]}>Logout</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -171,112 +171,99 @@ const ProfileScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: colors.white,
-    justifyContent: "flex-start",
+    backgroundColor: "white",
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
+  header: {
+    backgroundColor: "#3B525F", // Background color
+    height: 200,
+    padding: 20,
     alignItems: "center",
-    backgroundColor: colors.white,
+    justifyContent: "center",
   },
   backButtonWrapper: {
+    position: "absolute",
+    top: 20,
+    left: 10,
     height: 40,
     width: 40,
     backgroundColor: colors.accent,
     borderRadius: 20,
-    marginLeft: 10,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20,
   },
-  profilePictureContainer: {
+  headerContent: {
     alignItems: "center",
-    marginVertical: 20,
   },
-  profilePicture: {
+  avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    borderWidth: 2,
+    borderColor: "white",
+    marginVertical: 10,
   },
-  infoContainer: {
-    backgroundColor: "white", // Sets the background color to white
-    borderWidth: 1, // Sets the border width
-    borderColor: "black", // Sets the border color to white
-    borderRadius: 5,
-    marginHorizontal: 20,
+  name: {
+    fontSize: 22,
+    color: "white",
+    fontWeight: "600",
+    fontFamily: "Helvetica",
+    textAlign: "center",
+  },
+  userInfo: {
+    fontSize: 20,
+    color: "white",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  body: {
+    flex: 1,
+    backgroundColor: "white",
+    alignItems: "center",
     padding: 20,
   },
-  nameText: {
-    fontSize: 24,
-    color: colors.primary,
-    fontFamily: fonts.SemiBold,
-    textAlign: "center",
-    marginBottom: 10,
-    fontWeight: "bold",
+  infoContainer: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    marginTop: 20,
   },
-  emailText: {
-    fontSize: 18,
-    color: colors.secondary,
-    fontFamily: fonts.Light,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  birthText: {
+  infoText: {
     fontSize: 16,
-    color: colors.secondary,
-    fontFamily: fonts.Regular,
-    textAlign: "center",
+    color: "black",
+    fontWeight: "550",
+    fontFamily: "Helvetica",
     marginBottom: 10,
   },
-  preferencesText: {
-    fontSize: 16,
-    color: colors.secondary,
-    fontFamily: fonts.Regular,
-    textAlign: "center",
-    marginBottom: 10,
+  btn: {
+    marginTop: 20,
+    backgroundColor: colors.accent,
+    borderRadius: 10,
+    width: 200,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
   },
-  specializationsText: {
+  btnText: {
+    color: "white",
     fontSize: 16,
-    color: colors.secondary,
-    fontFamily: fonts.Regular,
-    textAlign: "center",
-    marginBottom: 10,
+    fontFamily: "Helvetica",
+    fontWeight: "600",
   },
-  availabilityText: {
-    fontSize: 16,
-    color: colors.secondary,
-    fontFamily: fonts.Regular,
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  ratingsText: {
-    fontSize: 16,
-    color: colors.secondary,
-    fontFamily: fonts.Regular,
-    textAlign: "center",
-    marginBottom: 10,
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
   },
   errorText: {
     fontSize: 18,
-    color: colors.error,
-    fontFamily: fonts.SemiBold,
+    color: "red",
+    fontFamily: "Helvetica",
     textAlign: "center",
-    marginTop: 20,
-  },
-  logoutButton: {
-    backgroundColor: colors.accent,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    margin: 20,
-    alignItems: "center",
-  },
-  logoutText: {
-    fontSize: 16,
-    color: colors.white,
-    fontFamily: fonts.SemiBold,
   },
 });
 
