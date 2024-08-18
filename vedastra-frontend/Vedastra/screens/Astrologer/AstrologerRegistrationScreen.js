@@ -87,14 +87,21 @@ const AstrologerRegisterScreen = ({ navigation }) => {
         multiple: false,
       });
 
-      if (result.type === "success") {
-        if (result.uri && result.mimeType && result.name) {
-          setDocument(result);
-        } else {
-          Alert.alert("Error", "Document properties are missing");
-        }
-      } else {
+      console.log("Document picker result:", result); // Debug log
+
+      // Check if the result contains assets and handle accordingly
+      if (result.canceled) {
         Alert.alert("Info", "Document selection was cancelled");
+        return;
+      }
+
+      // Access document from assets array
+      const document = result.assets[0];
+
+      if (document.uri && document.mimeType && document.name) {
+        setDocument(document);
+      } else {
+        Alert.alert("Error", "Document properties are missing");
       }
     } catch (error) {
       console.error("Document picker error:", error);

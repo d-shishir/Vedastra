@@ -93,6 +93,7 @@ const AstrologerConsultationScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>My Consultations</Text>
       {liveConsultations.length > 0 && (
         <>
           <Text style={styles.header}>Live Consultations</Text>

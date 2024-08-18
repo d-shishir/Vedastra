@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <!-- Bootstrap 5 CDN -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome CDN -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f8f9fa;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+      .sidebar {
+        min-width: 200px;
+        max-width: 200px;
+        background-color: #343a40;
+        color: white;
+        padding: 20px;
+        height: 100vh;
+        position: fixed;
+      }
+      .sidebar a {
+        color: white;
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+      .sidebar a:hover {
+        background-color: #495057;
+      }
+      .content {
+        margin-left: 220px;
+        padding: 20px;
+      }
+      .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .table-container {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h4>Admin Dashboard</h4>
+      <a href="#verify-astrologers"
+        ><i class="fas fa-user-check"></i> Verify Astrologers</a
+      >
+      <a href="#view-dashboard"
+        ><i class="fas fa-tachometer-alt"></i> View Dashboard</a
+      >
+      <a href="#" id="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+    <div class="content">
+      <div class="dashboard-header">
+        <h3>Admin Dashboard</h3>
+        <button class="btn btn-primary" id="logoutButton">Logout</button>
+      </div>
+      <div id="verify-astrologers">
+        <h4>Verify Astrologers</h4>
+        <p>List of astrologers pending verification.</p>
+        <div class="table-container">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Document</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="astrologersTableBody">
+              <!-- Data rows will be injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <hr />
+      <div id="view-dashboard">
+        <h4>Statistics</h4>
+        <p>Overview of the platform's performance.</p>
+        <div class="table-container">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Specializations</th>
+                <th>Availability</th>
+              </tr>
+            </thead>
+            <tbody id="statisticsTableBody">
+              <!-- Data rows will be injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Bootstrap 5 JS and dependencies -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      // Function to fetch and display astrologers
+      async function fetchAstrologers() {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          window.location.href = "/admin"; // Redirect to login if no token
+          return;
+        }
+
+        try {
+          const response = await fetch("/api/admin/dashboard", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            const astrologersTableBody = document.getElementById(
+              "astrologersTableBody"
+            );
+            astrologersTableBody.innerHTML = ""; // Clear existing rows
+
+            result.astrologers.forEach((astrologer, index) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${astrologer.name}</td>
+                <td>${astrologer.email}</td>
+                <td>${astrologer.verified ? "Verified" : "Pending"}</td>
+                <td>
+                  ${
+                    astrologer.document
+                      ? `<button class="btn btn-info btn-sm" onclick="viewDocument('${astrologer._id}')">View Document</button>`
+                      : "No Document"
+                  }
+                </td>
+                <td>
+                  ${
+                    !astrologer.verified
+                      ? `<button class="btn btn-success btn-sm" onclick="verifyAstrologer('${astrologer._id}')">Verify</button>`
+                      : ""
+                  }
+                </td>
+              `;
+              astrologersTableBody.appendChild(row);
+            });
+          } else {
+            console.error(result.message);
+          }
+        } catch (error) {
+          console.error("Error fetching astrologers:", error);
+        }
+      }
+
+      // Function to verify an astrologer
+      async function verifyAstrologer(id) {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          window.location.href = "/admin"; // Redirect to login if no token
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/admin/verifyAstrologer/${id}`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            alert("Astrologer verified successfully");
+            fetchAstrologers(); // Refresh the list
+          } else {
+            alert(result.message);
+          }
+        } catch (error) {
+          console.error("Error verifying astrologer:", error);
+        }
+      }
+
+      // Function to view an astrologer's document
+      function viewDocument(id) {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          window.location.href = "/admin"; // Redirect to login if no token
+          return;
+        }
+
+        fetch(`/api/admin/getDocument/${id}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((result) => {
+            let documentUrl = result.documentUrl; // Assuming documentUrl is returned
+
+            // Adjust the URL based on expected route structure
+            const baseUrl = "http://localhost:5000/"; // Define your base URL for documents
+            if (documentUrl && documentUrl.startsWith("/admin/uploads/")) {
+              documentUrl =
+                baseUrl + documentUrl.substring("/admin/uploads/".length);
+            } else {
+              documentUrl = baseUrl + documentUrl;
+            }
+
+            console.log(documentUrl);
+            if (documentUrl) {
+              window.open(documentUrl, "_blank"); // Open document in a new tab
+            } else {
+              alert("No document available");
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching document:", error);
+          });
+      }
+
+      // Logout functionality
+      document.getElementById("logout").addEventListener("click", function () {
+        localStorage.removeItem("authToken");
+        window.location.href = "/admin";
+      });
+
+      document
+        .getElementById("logoutButton")
+        .addEventListener("click", function () {
+          localStorage.removeItem("authToken");
+          window.location.href = "/admin";
+        });
+
+      // Initialize by fetching astrologers
+      fetchAstrologers();
+    </script>
+  </body>
+</html>

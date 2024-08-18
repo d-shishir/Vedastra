@@ -81,7 +81,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
 
   // Fetch live consultations only after the profile is loaded
   useEffect(() => {
-    if (profile) {
+    if (profile && profile.isVerified) {
       fetchLiveConsultations();
     }
   }, [profile]);
@@ -109,6 +109,7 @@ const AstrologerHomeScreen = ({ navigation }) => {
     specializations = [],
     availability = {},
     ratings = {},
+    verified = false,
   } = profile;
 
   const days = availability.days || [];
@@ -154,46 +155,52 @@ const AstrologerHomeScreen = ({ navigation }) => {
         </Text>
       </View>
 
-      <View style={styles.profileSection}>
-        <Text style={styles.sectionTitle}>Availability</Text>
-        <View style={styles.toggleContainer}>
-          <Text style={styles.detailText}>Available for consultations:</Text>
-          <Switch
-            style={styles.switch}
-            value={isAvailable}
-            onValueChange={handleToggleAvailability}
-          />
+      {verified ? (
+        <>
+          <View style={styles.profileSection}>
+            <Text style={styles.sectionTitle}>Availability</Text>
+            <View style={styles.toggleContainer}>
+              <Text style={styles.detailText}>
+                Available for consultations:
+              </Text>
+              <Switch
+                style={styles.switch}
+                value={isAvailable}
+                onValueChange={handleToggleAvailability}
+              />
+            </View>
+          </View>
+
+          <View style={styles.profileSection}>
+            <Text style={styles.sectionTitle}>Live Consultations</Text>
+            {error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : liveConsultations.length === 0 ? (
+              <Text>No live consultations at the moment.</Text>
+            ) : (
+              <FlatList
+                data={liveConsultations}
+                renderItem={renderConsultationItem}
+                keyExtractor={(item) => item._id.toString()}
+                contentContainerStyle={styles.consultationList}
+              />
+            )}
+          </View>
+        </>
+      ) : (
+        <View style={styles.profileSection}>
+          <Text style={styles.errorText}>
+            You are not yet verified. Please wait for verification.
+          </Text>
         </View>
-      </View>
-
-      {/* <View style={styles.profileSection}>
-        <Text style={styles.sectionTitle}>Ratings</Text>
-        <Text style={styles.detailText}>Average Rating: {averageRating}</Text>
-        <Text style={styles.detailText}>Reviews Count: {reviewsCount}</Text>
-      </View> */}
-
-      <View style={styles.profileSection}>
-        <Text style={styles.sectionTitle}>Live Consultations</Text>
-        {error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : liveConsultations.length === 0 ? (
-          <Text>No live consultations at the moment.</Text>
-        ) : (
-          <FlatList
-            data={liveConsultations}
-            renderItem={renderConsultationItem}
-            keyExtractor={(item) => item._id.toString()}
-            contentContainerStyle={styles.consultationList}
-          />
-        )}
-      </View>
-
+      )}
+      {/* 
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("UpcomingConsultations")}
       >
         <Text style={styles.buttonText}>Upcoming Consultations</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       {/* <TouchableOpacity
         style={[styles.button, styles.logoutButton]}
