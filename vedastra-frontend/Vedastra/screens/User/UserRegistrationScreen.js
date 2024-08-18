@@ -51,6 +51,8 @@ const RegisterScreen = ({ navigation }) => {
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
 
   const handleRegister = async () => {
+    console.log("Selected Preferences:", preferences); // Debug line
+
     if (!name || !email || !password || !birthdate || !birthplace) {
       Alert.alert("Error", "Please fill in all required fields.");
       return;
@@ -68,11 +70,8 @@ const RegisterScreen = ({ navigation }) => {
         birthdate: combinedBirthdate.toISOString(),
         birthplace,
         profilePicture,
-        preferences: {
-          dailyHoroscope: true,
-          personalizedReadings: true,
-        },
-        location: selectedLocation, // Send the selected location details
+        preferences, // Send the selected preferences
+        location: selectedLocation,
       });
 
       await storeToken(response.data.token);
@@ -101,6 +100,7 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const handlePreferencesSave = () => {
+    console.log("Saving Preferences:", preferences); // Debug line
     setShowPreferencesModal(false);
   };
 

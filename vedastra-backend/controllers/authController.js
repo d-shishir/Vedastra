@@ -11,7 +11,8 @@ const authController = {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password, birthdate, location } = req.body;
+    const { name, email, password, birthdate, location, preferences } =
+      req.body;
     const { city, state, country, latitude, longitude } = location;
 
     try {
@@ -29,6 +30,7 @@ const authController = {
         email: email.toLowerCase(),
         password: hashedPassword, // Ensure hashed password is stored
         birthdate,
+        preferences,
         birthplace: city,
         location: {
           city,

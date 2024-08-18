@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { uploadDocument } = require("../middlewares/uploadMiddleware"); // Middleware to handle file uploads
 const Review = require("../models/Review");
 const User = require("../models/User");
+const { recommendAstrologers } = require("../utils/recommendAstrologers");
 
 // Astrologer registration
 exports.registerAstrologer = async (req, res) => {
@@ -309,5 +310,19 @@ exports.getReviewsAndRatings = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Server Error");
+  }
+};
+
+// Recommend astrologers to a user
+exports.recommendAstrologersToUser = async (req, res) => {
+  try {
+    const userId = req.user._id; // Assuming the user is authenticated
+
+    const recommendedAstrologers = await recommendAstrologers(userId);
+
+    res.json(recommendedAstrologers);
+  } catch (err) {
+    console.error("Error recommending astrologers:", err);
+    res.status(500).json({ message: "Server Error", error: err.message });
   }
 };

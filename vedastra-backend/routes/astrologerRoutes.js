@@ -23,6 +23,15 @@ router.post("/login", astrologerController.loginAstrologer);
 // @access  Private
 router.get("/me", authMiddleware, astrologerController.getAstrologerProfile);
 
+// @route   GET api/astrologers/recommend
+// @desc    Recommend astrologers to the user
+// @access  Private
+router.get(
+  "/recommend",
+  authMiddleware,
+  astrologerController.recommendAstrologersToUser
+);
+
 // @route   GET api/astrologers
 // @desc    Get all astrologers or filter by availability
 // @access  Public
@@ -33,7 +42,9 @@ router.get("/", astrologerController.getAllAstrologers);
 // @access  Private
 router.post("/:id/reviews", authMiddleware, astrologerController.addReview);
 
-// Route to get reviews and ratings of an astrologer
+// @route   GET /api/astrologers/:id/reviews
+// @desc    Get reviews and ratings of an astrologer
+// @access  Public
 router.get("/:id/reviews", astrologerController.getReviewsAndRatings);
 
 // @route   GET api/astrologers/:id
