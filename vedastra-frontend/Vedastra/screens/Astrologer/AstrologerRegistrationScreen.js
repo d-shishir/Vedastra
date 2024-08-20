@@ -52,7 +52,9 @@ const AstrologerRegisterScreen = ({ navigation }) => {
       formData.append("name", name);
       formData.append("email", email);
       formData.append("password", password);
-      formData.append("specializations", selectedSpecializations);
+      selectedSpecializations.forEach((specialization, index) => {
+        formData.append(`specializations[${index}]`, specialization);
+      });
 
       if (document) {
         formData.append("document", {

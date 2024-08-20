@@ -11,10 +11,6 @@ const ConsultationSchema = new mongoose.Schema({
     ref: "Astrologer",
     required: true,
   },
-  scheduledAt: {
-    type: Date,
-    required: true,
-  },
   status: {
     type: String,
     enum: ["live", "completed"],

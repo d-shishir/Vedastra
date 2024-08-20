@@ -9,8 +9,8 @@ import {
   ActivityIndicator,
   Button,
   Platform,
-  SafeAreaView,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native";
 import io from "socket.io-client";
 import axiosInstance from "../api/axiosInstance";

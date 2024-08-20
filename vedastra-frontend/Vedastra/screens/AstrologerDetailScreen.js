@@ -299,10 +299,11 @@ const AstrologerDetailScreen = ({ navigation, route }) => {
           <StarRating
             rating={rating}
             starSize={30}
-            selectedStar={(rating) => setRating(rating)}
+            onChange={(newRating) => setRating(newRating)} // Update to onChange
             fullStarColor={colors.primary}
             emptyStarColor={colors.grey}
           />
+
           <Button title="Submit Review" onPress={handleSubmitReview} />
         </View>
       )}

@@ -9,10 +9,20 @@ const astrologerRecommendation = require("../utils/recommendAstrologers");
 // Astrologer registration
 exports.registerAstrologer = async (req, res) => {
   const { name, email, password, specializations } = req.body;
-  const document = req.file ? req.file.path : null; // Assuming `uploadDocument` middleware sets `req.file`
+  const document = req.file ? req.file.path : null;
 
-  if (!name || !email || !password || !specializations) {
-    return res.status(400).json({ msg: "Please enter all fields" });
+  if (
+    !name ||
+    !email ||
+    !password ||
+    !specializations ||
+    !Array.isArray(specializations)
+  ) {
+    return res
+      .status(400)
+      .json({
+        msg: "Please enter all fields and select at least one specialization.",
+      });
   }
 
   try {
@@ -25,9 +35,9 @@ exports.registerAstrologer = async (req, res) => {
       name,
       email,
       password,
-      specializations,
-      document, // Include the document path
-      verified: false, // Set default to false until verified
+      specializations, // Ensure this is an array
+      document,
+      verified: false,
     });
 
     const salt = await bcrypt.genSalt(10);

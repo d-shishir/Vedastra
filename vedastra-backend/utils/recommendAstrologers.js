@@ -12,8 +12,10 @@ async function astrologerRecommendation(userId) {
       throw new Error("User not found");
     }
 
-    // Find all astrologers
-    const astrologers = await Astrologer.find().populate("reviews");
+    // Find all available astrologers
+    const astrologers = await Astrologer.find({ isAvailable: true }).populate(
+      "reviews"
+    );
 
     // Calculate ratings for each astrologer
     const astrologerRatings = astrologers.map((astrologer) => {

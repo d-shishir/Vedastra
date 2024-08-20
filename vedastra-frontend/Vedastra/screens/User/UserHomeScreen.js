@@ -10,13 +10,13 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
-  SafeAreaView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "../../api/axiosInstance";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const HomeScreen = ({ navigation }) => {
   const [horoscopeText, setHoroscopeText] = useState("");
@@ -73,7 +73,7 @@ const HomeScreen = ({ navigation }) => {
         params: { userId },
       });
 
-      console.log("Recommended Astrologers Response:", response.data);
+      // console.log("Recommended Astrologers Response:", response.data);
 
       // Filter out astrologers with a score of 0
       const filteredAstrologers = response.data.filter(
@@ -99,6 +99,7 @@ const HomeScreen = ({ navigation }) => {
     try {
       const token = await AsyncStorage.getItem("token");
       const userId = await AsyncStorage.getItem("userId");
+      console.log(userId);
 
       if (token && userId) {
         // Fetch all consultations
@@ -106,7 +107,7 @@ const HomeScreen = ({ navigation }) => {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Find the user's active consultation with status "live"
+        // Filter consultations to find those that match the current user's ID and are "live"
         const userLiveConsultations = response.data.filter(
           (consultation) =>
             consultation.userId._id === userId && consultation.status === "live"
@@ -114,6 +115,7 @@ const HomeScreen = ({ navigation }) => {
 
         // Assuming you want to display the first live consultation if multiple are found
         setActiveConsultation(userLiveConsultations[0] || null);
+        console.log(activeConsultation);
       } else {
         throw new Error("Token or user ID is missing.");
       }
@@ -180,61 +182,69 @@ const HomeScreen = ({ navigation }) => {
       setError("Failed to log out.");
     }
   };
+  const renderAstrologerItem = ({ item }) => {
+    const isActiveConsultationForAstrologer =
+      activeConsultation && activeConsultation.astrologerId._id === item._id;
 
-  const renderAstrologerItem = ({ item }) => (
-    <View style={styles.astrologerItem}>
-      <Image
-        source={{
-          uri: item.profilePicture || "https://via.placeholder.com/50",
-        }}
-        style={styles.profilePicture}
-      />
-      <Text style={styles.astrologerName}>{item.name} </Text>
-      <Text style={styles.specializationsText}>
-        Specializations: {item.specializations.join(", ")}
-      </Text>
-      <View style={styles.astroItem}>
-        <View style={styles.buttonsContainer}>
-          <TouchableOpacity
-            style={styles.chatButton}
-            onPress={() => startConsultation(item._id)}
-          >
-            <Ionicons
-              name="chatbubble-outline"
-              size={20}
-              color={colors.white}
-            />
-            <Text style={styles.chatButtonText}>
-              {activeConsultation &&
-              activeConsultation.astrologerId._id === item._id
-                ? "Continue Chat"
-                : "Let's Chat"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.detailsButton}
-            onPress={() =>
-              navigation.navigate("AstroDetail", {
-                id: item._id,
-              })
-            }
-          >
-            <Ionicons
-              name="information-circle-outline"
-              size={20}
-              color={colors.primary}
-            />
-            <Text style={styles.detailsButtonText}>View Details</Text>
-          </TouchableOpacity>
+    return (
+      <View style={styles.astrologerItem}>
+        <Image
+          source={{
+            uri: item.profilePicture || "https://via.placeholder.com/50",
+          }}
+          style={styles.profilePicture}
+        />
+        <Text style={styles.astrologerName}>{item.name}</Text>
+        <Text style={styles.specializationsText}>
+          Specializations: {item.specializations.join(", ")}
+        </Text>
+        <View style={styles.astroItem}>
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={styles.chatButton}
+              onPress={() => startConsultation(item._id)}
+            >
+              <Ionicons
+                name="chatbubble-outline"
+                size={20}
+                color={colors.white}
+              />
+              <Text style={styles.chatButtonText}>
+                {isActiveConsultationForAstrologer
+                  ? "Continue Chat"
+                  : "Let's Chat"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.detailsButton}
+              onPress={() =>
+                navigation.navigate("AstroDetail", {
+                  id: item._id,
+                })
+              }
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={20}
+                color={colors.primary}
+              />
+              <Text style={styles.detailsButtonText}>View Details</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const filteredAstrologers = activeConsultation
-    ? astrologers.filter(
-        (astrologer) => astrologer._id === activeConsultation.astrologerId._id
-      )
+    ? astrologers.filter((astrologer) => {
+        console.log("Astrologer ID:", astrologer._id);
+        console.log(
+          "Active Consultation Astrologer ID:",
+          activeConsultation.astrologerId._id
+        );
+        return astrologer._id === activeConsultation.astrologerId._id;
+      })
     : astrologers;
 
   return (
