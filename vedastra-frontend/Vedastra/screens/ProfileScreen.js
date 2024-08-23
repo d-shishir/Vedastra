@@ -134,11 +134,7 @@ const ProfileScreen = ({ navigation }) => {
                 Birthplace: {birthplace || "No birthplace provided"}
               </Text>
               <Text style={styles.infoText}>
-                Daily Horoscope: {preferences?.dailyHoroscope ? "Yes" : "No"}
-              </Text>
-              <Text style={styles.infoText}>
-                Personalized Readings:{" "}
-                {preferences?.personalizedReadings ? "Yes" : "No"}
+                Preferences: {preferences?.join(", ") || "No preferences"}
               </Text>
             </>
           )}
