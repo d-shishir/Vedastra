@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import {
+  Alert,
   Image,
   StyleSheet,
   Text,
@@ -9,7 +10,6 @@ import {
 } from "react-native";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
-
 import Ionicons from "react-native-vector-icons/Ionicons";
 import SimpleLineIcons from "react-native-vector-icons/SimpleLineIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -25,7 +25,27 @@ const UserLoginScreen = () => {
   const [secureEntry, setSecureEntry] = useState(true);
   const { setAuthData } = useContext(AuthContext);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in both email and password fields.");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters long.");
+      return;
+    }
+
     try {
       const response = await axiosInstance.post("/auth/login", {
         email,
@@ -43,7 +63,9 @@ const UserLoginScreen = () => {
       navigation.navigate("UserTabs");
     } catch (error) {
       console.error("Login error:", error);
-      Alert.alert("Error", "Invalid credentials or user ID not found");
+
+      // Customizing the error message
+      Alert.alert("Error", "Invalid credentials");
     }
   };
 
@@ -112,14 +134,6 @@ const UserLoginScreen = () => {
         >
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
-        {/* <Text style={styles.continueText}>or continue with</Text> */}
-        {/* <TouchableOpacity style={styles.googleButtonContainer}>
-          <Image
-            source={require("../../assets/google.png")}
-            style={styles.googleImage}
-          />
-          <Text style={styles.googleText}>Google</Text>
-        </TouchableOpacity> */}
         <View style={styles.footerContainer}>
           <Text style={styles.accountText}>Don’t have an account?</Text>
           <TouchableOpacity onPress={handleSignup}>
@@ -188,31 +202,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.SemiBold,
     textAlign: "center",
     padding: 10,
-  },
-  continueText: {
-    textAlign: "center",
-    marginVertical: 20,
-    fontSize: 14,
-    fontFamily: fonts.Regular,
-    color: colors.primary,
-  },
-  googleButtonContainer: {
-    flexDirection: "row",
-    borderWidth: 2,
-    borderColor: colors.primary,
-    borderRadius: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 10,
-    gap: 10,
-  },
-  googleImage: {
-    height: 20,
-    width: 20,
-  },
-  googleText: {
-    fontSize: 20,
-    fontFamily: fonts.SemiBold,
   },
   footerContainer: {
     flexDirection: "row",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import axiosInstance from "../../api/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
+import { useFocusEffect } from "@react-navigation/native";
 
 const AstrologerConsultationScreen = ({ navigation }) => {
   const [consultations, setConsultations] = useState([]);
@@ -33,6 +34,13 @@ const AstrologerConsultationScreen = ({ navigation }) => {
     }
   };
 
+  // Use useFocusEffect to fetch consultations when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchConsultations();
+    }, [])
+  );
+
   // Function to handle cancelling a consultation
   const handleCancel = async (consultationId) => {
     try {
@@ -46,16 +54,12 @@ const AstrologerConsultationScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchConsultations();
-  }, []);
-
   // Render a single consultation item
   const renderConsultationItem = ({ item }) => (
     <View style={styles.consultationItem}>
       <Text style={styles.consultationTitle}>User: {item.userId.name}</Text>
       <Text style={styles.consultationText}>
-        {new Date(item.scheduledAt).toLocaleString()}
+        {new Date(item.createdAt).toLocaleString()}
       </Text>
       <Text style={styles.consultationText}>Status: {item.status}</Text>
       {item.status === "scheduled" && (
@@ -151,7 +155,7 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    marginBottom: 20,
+    marginBottom: 5,
     fontWeight: "bold",
     color: "#343a40",
   },

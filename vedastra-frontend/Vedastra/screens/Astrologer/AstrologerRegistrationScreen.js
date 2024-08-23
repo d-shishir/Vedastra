@@ -18,6 +18,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { colors } from "../../utils/colors";
 import { fonts } from "../../utils/fonts";
 import { SafeAreaView } from "react-native-safe-area-context";
+
 const specializationOptions = [
   "Numerology",
   "Marriage",
@@ -39,7 +40,34 @@ const AstrologerRegisterScreen = ({ navigation }) => {
   const [secureEntry, setSecureEntry] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const validateName = (name) => {
+    // Check if the name is not empty and has at least 2 characters
+    if (!name || name.trim().length < 2) {
+      return false;
+    }
+
+    // Check if the name contains only letters and spaces
+    const nameRegex = /^[A-Za-z\s]+$/;
+    return nameRegex.test(name.trim());
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleRegister = async () => {
+    if (!validateName(name)) {
+      return Alert.alert(
+        "Error",
+        "Please enter a valid name with at least 2 characters."
+      );
+    }
+
+    if (!validateEmail(email)) {
+      return Alert.alert("Error", "Please enter a valid email address.");
+    }
+
     if (!name || !email || !password || selectedSpecializations.length === 0) {
       return Alert.alert(
         "Error",
@@ -89,15 +117,11 @@ const AstrologerRegisterScreen = ({ navigation }) => {
         multiple: false,
       });
 
-      console.log("Document picker result:", result); // Debug log
-
-      // Check if the result contains assets and handle accordingly
       if (result.canceled) {
         Alert.alert("Info", "Document selection was cancelled");
         return;
       }
 
-      // Access document from assets array
       const document = result.assets[0];
 
       if (document.uri && document.mimeType && document.name) {
@@ -120,6 +144,7 @@ const AstrologerRegisterScreen = ({ navigation }) => {
       }
     });
   };
+
   return (
     <SafeAreaView style={styles.container} keyboardShouldPersistTaps="handled">
       <TouchableOpacity
@@ -194,12 +219,6 @@ const AstrologerRegisterScreen = ({ navigation }) => {
         >
           <Text style={styles.registerText}>Register</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
-          style={styles.backToLoginWrapper}
-          onPress={() => navigation.navigate("AstrologerLogin")}
-        >
-          <Text style={styles.backToLoginText}>Back to Login</Text>
-        </TouchableOpacity> */}
       </View>
       <Modal
         visible={modalVisible}
@@ -302,73 +321,61 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: fonts.SemiBold,
     textAlign: "center",
-    padding: 10,
-  },
-  backToLoginWrapper: {
-    marginTop: 20,
-    backgroundColor: colors.gray,
-    borderRadius: 100,
-  },
-  backToLoginText: {
-    color: colors.white,
-    fontSize: 20,
-    fontFamily: fonts.SemiBold,
-    textAlign: "center",
-    padding: 10,
+    paddingVertical: 10,
   },
   specializationButton: {
-    borderWidth: 1,
     borderColor: colors.secondary,
+    borderWidth: 1,
     borderRadius: 100,
+    marginTop: 20,
+    paddingVertical: 10,
     paddingHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 8,
-    marginVertical: 10,
-    justifyContent: "center",
   },
   specializationText: {
-    fontFamily: fonts.Light,
     color: colors.secondary,
+    fontSize: 16,
+    fontFamily: fonts.Light,
   },
   modalContainer: {
     flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: colors.white,
-    borderRadius: 10,
+    borderRadius: 20,
     padding: 20,
     width: "80%",
   },
   option: {
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.secondary,
+    borderBottomColor: colors.lightGray,
   },
   optionSelected: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
   },
   optionText: {
+    color: colors.secondary,
     fontSize: 16,
     fontFamily: fonts.Light,
   },
   optionTextSelected: {
-    color: colors.white,
+    color: colors.primary,
   },
   closeButton: {
     backgroundColor: colors.primary,
-    borderRadius: 5,
-    padding: 10,
-    marginTop: 10,
+    borderRadius: 100,
+    marginTop: 20,
   },
   closeButtonText: {
     color: colors.white,
-    textAlign: "center",
-    fontSize: 16,
+    fontSize: 20,
     fontFamily: fonts.SemiBold,
+    textAlign: "center",
+    paddingVertical: 10,
   },
 });
 

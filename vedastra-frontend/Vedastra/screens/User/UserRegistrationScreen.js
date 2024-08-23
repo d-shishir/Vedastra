@@ -50,8 +50,35 @@ const RegisterScreen = ({ navigation }) => {
   const [preferences, setPreferences] = useState([]);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
 
+  const validateName = (name) => {
+    // Check if the name is not empty and has at least 2 characters
+    if (!name || name.trim().length < 2) {
+      return false;
+    }
+
+    // Check if the name contains only letters and spaces
+    const nameRegex = /^[A-Za-z\s]+$/;
+    return nameRegex.test(name.trim());
+  };
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleRegister = async () => {
     console.log("Selected Preferences:", preferences); // Debug line
+
+    if (!validateName(name)) {
+      return Alert.alert(
+        "Error",
+        "Please enter a valid name with at least 2 characters."
+      );
+    }
+
+    if (!validateEmail(email)) {
+      return Alert.alert("Error", "Please enter a valid email address.");
+    }
 
     if (!name || !email || !password || !birthdate || !birthplace) {
       Alert.alert("Error", "Please fill in all required fields.");

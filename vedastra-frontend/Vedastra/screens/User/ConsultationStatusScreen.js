@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,17 +9,20 @@ import {
 } from "react-native";
 import axiosInstance from "../../api/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { colors } from "../../utils/colors";
 
-const ConsultationStatusScreen = () => {
+const ConsultationStatusScreen = ({ navigation }) => {
   const [consultations, setConsultations] = useState({
     scheduled: [],
     completed: [],
     canceled: [],
+    live: [],
   });
   const [loading, setLoading] = useState(true);
 
   // Function to fetch user's consultations
-  const fetchConsultations = async () => {
+  const fetchConsultations = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await axiosInstance.get("/consultations", {
@@ -30,6 +33,7 @@ const ConsultationStatusScreen = () => {
         scheduled: [],
         completed: [],
         canceled: [],
+        live: [],
       };
 
       response.data.forEach((consultation) => {
@@ -39,6 +43,8 @@ const ConsultationStatusScreen = () => {
           sortedConsultations.completed.push(consultation);
         } else if (consultation.status === "canceled") {
           sortedConsultations.canceled.push(consultation);
+        } else if (consultation.status === "live") {
+          sortedConsultations.live.push(consultation);
         }
       });
 
@@ -48,7 +54,14 @@ const ConsultationStatusScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  // Fetch consultations when the screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      fetchConsultations();
+    }, [fetchConsultations])
+  );
 
   // Function to handle cancelling a consultation
   const handleCancel = async (consultationId) => {
@@ -64,10 +77,6 @@ const ConsultationStatusScreen = () => {
       console.error("Cancel consultation error:", error);
     }
   };
-
-  useEffect(() => {
-    fetchConsultations();
-  }, []);
 
   // Render a single consultation item
   const renderConsultationItem = ({ item }) => (
@@ -85,6 +94,16 @@ const ConsultationStatusScreen = () => {
           <Text style={styles.cancelButtonText}>Cancel Consultation</Text>
         </TouchableOpacity>
       )}
+      {item.status === "live" && (
+        <TouchableOpacity
+          style={styles.chatButton}
+          onPress={() =>
+            navigation.navigate("ChatScreen", { consultationId: item._id })
+          }
+        >
+          <Text style={styles.chatButtonText}>Open Chat</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -95,6 +114,17 @@ const ConsultationStatusScreen = () => {
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <>
+          {consultations.live.length > 0 && (
+            <>
+              <Text style={styles.sectionHeader}>Live Consultations</Text>
+              <FlatList
+                data={consultations.live}
+                renderItem={renderConsultationItem}
+                keyExtractor={(item) => item._id.toString()}
+                contentContainerStyle={styles.consultationList}
+              />
+            </>
+          )}
           {consultations.scheduled.length > 0 && (
             <>
               <Text style={styles.sectionHeader}>Scheduled Consultations</Text>
@@ -142,19 +172,19 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    marginBottom: 20,
+    marginBottom: 0,
     fontWeight: "bold",
     color: "#343a40",
   },
   sectionHeader: {
     fontSize: 20,
-    marginTop: 20,
+    marginTop: 5,
     marginBottom: 10,
     fontWeight: "bold",
     color: "#495057",
   },
   consultationList: {
-    marginTop: 10,
+    marginTop: 0,
   },
   consultationItem: {
     padding: 16,
@@ -177,6 +207,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+  },
+  chatButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: colors.darkAccent,
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  chatButtonText: {
     color: "#ffffff",
     fontSize: 16,
   },

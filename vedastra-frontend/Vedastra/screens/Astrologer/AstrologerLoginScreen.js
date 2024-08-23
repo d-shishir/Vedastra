@@ -25,7 +25,22 @@ const AstrologerLoginScreen = ({ navigation }) => {
   const { setAuthData } = useContext(AuthContext);
   const [secureEntry, setSecureEntry] = useState(true);
 
+  const validateEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
+
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill out all fields");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert("Error", "Please enter a valid email address");
+      return;
+    }
+
     try {
       const response = await axiosInstance.post("/astrologers/login", {
         email,
@@ -33,18 +48,14 @@ const AstrologerLoginScreen = ({ navigation }) => {
       });
       const { token } = response.data;
 
-      // Store token in AsyncStorage
       await storeToken(token);
 
-      // Fetch astrologer profile
       const meResponse = await axiosInstance.get("/astrologers/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Pass the response data to setAuthData
       await setAuthData("astrologer", meResponse.data);
 
-      // Navigate to Home screen
       navigation.navigate("AstrologerTabs");
     } catch (error) {
       console.error("Login error:", error);
@@ -55,9 +66,11 @@ const AstrologerLoginScreen = ({ navigation }) => {
   const handleGoBack = () => {
     navigation.goBack();
   };
+
   const handleSignup = () => {
     navigation.navigate("AstrologerRegister");
   };
+
   const handleForgot = () => {
     navigation.navigate("Forgot");
   };
@@ -116,14 +129,6 @@ const AstrologerLoginScreen = ({ navigation }) => {
         >
           <Text style={styles.loginText}>Login</Text>
         </TouchableOpacity>
-        {/* <Text style={styles.continueText}>or continue with</Text> */}
-        {/* <TouchableOpacity style={styles.googleButtonContainer}>
-          <Image
-            source={require("../../assets/google.png")}
-            style={styles.googleImage}
-          />
-          <Text style={styles.googleText}>Google</Text>
-        </TouchableOpacity> */}
         <View style={styles.footerContainer}>
           <Text style={styles.accountText}>Don’t have an account?</Text>
           <TouchableOpacity onPress={handleSignup}>

@@ -28,7 +28,6 @@ const AstrologerHomeScreen = ({ navigation }) => {
       const response = await axiosInstance.get("/astrologers/me");
       setProfile(response.data);
       setIsAvailable(response.data.isAvailable);
-      console.log(profile);
     } catch (error) {
       console.error("Fetch profile error:", error);
       setError("Failed to fetch profile data.");
@@ -38,17 +37,19 @@ const AstrologerHomeScreen = ({ navigation }) => {
   };
 
   const fetchLiveConsultations = async () => {
-    try {
-      const response = await axiosInstance.get("/consultations");
-      console.log("Live Consultations Response:", response.data); // Log the data
-      const filteredConsultations = response.data.filter(
-        (consultation) => consultation.astrologerId._id === profile._id
-      );
-      setLiveConsultations(filteredConsultations);
-      console.log(liveConsultations);
-    } catch (error) {
-      console.error("Fetch live consultations error:", error);
-      setError("Failed to fetch live consultations.");
+    if (profile) {
+      try {
+        const response = await axiosInstance.get("/consultations");
+        const filteredConsultations = response.data.filter(
+          (consultation) =>
+            consultation.astrologerId._id === profile._id &&
+            consultation.status === "live"
+        );
+        setLiveConsultations(filteredConsultations);
+      } catch (error) {
+        console.error("Fetch live consultations error:", error);
+        setError("Failed to fetch live consultations.");
+      }
     }
   };
 
@@ -81,10 +82,11 @@ const AstrologerHomeScreen = ({ navigation }) => {
     }, [])
   );
 
-  // Fetch live consultations only after the profile is loaded
-  useEffect(() => {
-    fetchLiveConsultations();
-  }, [profile]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLiveConsultations();
+    }, [profile])
+  );
 
   if (loading) {
     return (

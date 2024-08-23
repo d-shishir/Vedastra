@@ -10,6 +10,8 @@ import {
   Button,
   Platform,
 } from "react-native";
+import { useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAvoidingView } from "react-native";
 import io from "socket.io-client";
@@ -77,30 +79,32 @@ const ChatScreen = ({ navigation }) => {
     fetchConsultationDetails();
   }, [consultationId]);
 
-  // Fetch messages after socket setup
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (consultationDetails && consultationDetails.status === "live") {
-        try {
-          const response = await axiosInstance.get(
-            `/chats/${consultationId}/messages`
-          );
-          setMessages(response.data);
-          setChatExists(true);
-        } catch (error) {
-          if (error.response && error.response.status === 404) {
-            setChatExists(false);
-          } else {
-            console.error("Error fetching messages:", error.message);
-          }
-        } finally {
-          setLoading(false);
+  // Fetch messages when screen is focused
+  const fetchMessages = useCallback(async () => {
+    if (consultationDetails && consultationDetails.status === "live") {
+      try {
+        const response = await axiosInstance.get(
+          `/chats/${consultationId}/messages`
+        );
+        setMessages(response.data);
+        setChatExists(true);
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          setChatExists(false);
+        } else {
+          console.error("Error fetching messages:", error.message);
         }
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+  }, [consultationDetails, consultationId]);
 
-    fetchMessages();
-  }, [consultationDetails]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchMessages();
+    }, [fetchMessages])
+  );
 
   // Scroll to end after messages are fetched
   useEffect(() => {
