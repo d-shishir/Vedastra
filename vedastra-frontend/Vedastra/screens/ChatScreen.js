@@ -9,7 +9,9 @@ import {
   ActivityIndicator,
   Button,
   Platform,
+  Alert,
 } from "react-native";
+import { CommonActions } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -162,24 +164,60 @@ const ChatScreen = ({ navigation }) => {
       }
     }
   };
-
   const endConsultation = async () => {
     try {
       await axiosInstance.patch(`/consultations/${consultationId}/end`);
 
-      // Leave the socket room
-      socket.emit("leaveRoom", consultationId);
+      // Emit the event to notify both users
+      socket.emit("consultationEnded", { consultationId, endedBy: user._id });
 
-      // Clear messages and consultation details
-      setMessages([]);
-      setConsultationDetails(null);
-      setChatExists(false);
-
-      navigation.goBack();
+      // Show an alert to the user who ended the consultation
+      showEndConsultationAlert("You have ended the consultation.");
     } catch (error) {
       console.error("Error ending consultation:", error.message);
+      Alert.alert("Error", "Failed to end consultation. Please try again.");
     }
   };
+
+  const showEndConsultationAlert = useCallback(
+    (message) => {
+      Alert.alert("Consultation Ended", message, [
+        {
+          text: "OK",
+          onPress: () => {
+            socket.emit("leaveRoom", consultationId);
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: "Home" }],
+              })
+            );
+          },
+        },
+      ]);
+    },
+    [consultationId, navigation]
+  );
+
+  const handleConsultationEnded = useCallback(
+    ({ endedBy }) => {
+      const message =
+        endedBy === user._id
+          ? "You have ended the consultation."
+          : "The consultation has been ended by the other participant.";
+
+      showEndConsultationAlert(message);
+    },
+    [user._id, showEndConsultationAlert]
+  );
+
+  useEffect(() => {
+    socket.on("consultationEnded", handleConsultationEnded);
+
+    return () => {
+      socket.off("consultationEnded", handleConsultationEnded);
+    };
+  }, [handleConsultationEnded]);
 
   if (loading) {
     return (

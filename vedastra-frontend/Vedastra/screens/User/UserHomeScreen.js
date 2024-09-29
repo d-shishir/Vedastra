@@ -150,8 +150,10 @@ const HomeScreen = ({ navigation }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const consultationId = response.data._id;
+      const consultationId = response.data.consultationId;
+      console.log(response.data);
       navigation.navigate("ChatScreen", { consultationId });
+      console.log(consultationId);
     } catch (error) {
       console.error(
         "Start consultation error:",
@@ -311,7 +313,7 @@ const styles = StyleSheet.create({
   },
   horoscopeText: {
     fontSize: 16,
-    color: colors.secondary,
+    color: "#000",
     marginBottom: 20,
     fontFamily: fonts.Light,
   },

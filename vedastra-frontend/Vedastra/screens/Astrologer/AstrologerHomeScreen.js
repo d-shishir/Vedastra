@@ -159,19 +159,21 @@ const AstrologerHomeScreen = ({ navigation }) => {
 
       {verified ? (
         <>
-          <View style={styles.profileSection}>
-            <Text style={styles.sectionTitle}>Availability</Text>
-            <View style={styles.toggleContainer}>
-              <Text style={styles.detailText}>
-                Available for consultations:
-              </Text>
-              <Switch
-                style={styles.switch}
-                value={isAvailable}
-                onValueChange={handleToggleAvailability}
-              />
+          {liveConsultations.length === 0 ? (
+            <View style={styles.profileSection}>
+              <Text style={styles.sectionTitle}>Availability</Text>
+              <View style={styles.toggleContainer}>
+                <Text style={styles.detailText}>
+                  Available for consultations:
+                </Text>
+                <Switch
+                  style={styles.switch}
+                  value={isAvailable}
+                  onValueChange={handleToggleAvailability}
+                />
+              </View>
             </View>
-          </View>
+          ) : null}
 
           <View style={styles.profileSection}>
             <Text style={styles.sectionTitle}>Live Consultations</Text>

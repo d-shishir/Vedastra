@@ -12,6 +12,7 @@ import {
   Text,
   Image,
   Modal,
+  KeyboardAvoidingView,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axiosInstance from "../../api/axiosInstance";
@@ -66,6 +67,34 @@ const RegisterScreen = ({ navigation }) => {
     return emailRegex.test(email);
   };
 
+  const validateBirthdate = (birthdate) => {
+    const today = new Date();
+    const minAge = 0; // Define the minimum age required
+
+    // Check if the birthdate is in the future
+    if (birthdate > today) {
+      return { isValid: false, message: "Birthdate cannot be in the future." };
+    }
+
+    // Calculate the user's age
+    const age = today.getFullYear() - birthdate.getFullYear();
+    const monthDifference = today.getMonth() - birthdate.getMonth();
+    const dayDifference = today.getDate() - birthdate.getDate();
+
+    if (
+      age < minAge ||
+      (age === minAge &&
+        (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)))
+    ) {
+      return {
+        isValid: false,
+        message: `You must be at least ${minAge} years old.`,
+      };
+    }
+
+    return { isValid: true };
+  };
+
   const handleRegister = async () => {
     console.log("Selected Preferences:", preferences); // Debug line
 
@@ -78,6 +107,11 @@ const RegisterScreen = ({ navigation }) => {
 
     if (!validateEmail(email)) {
       return Alert.alert("Error", "Please enter a valid email address.");
+    }
+
+    const birthdateValidation = validateBirthdate(birthdate);
+    if (!birthdateValidation.isValid) {
+      return Alert.alert("Error", birthdateValidation.message);
     }
 
     if (!name || !email || !password || !birthdate || !birthplace) {
@@ -184,168 +218,182 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled" // Ensure taps outside text inputs dismiss keyboard
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "undefined"}
+      style={styles.containerTwo}
     >
-      <TouchableOpacity
-        style={styles.backButtonWrapper}
-        onPress={() => navigation.goBack()}
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled" // Ensure taps outside text inputs dismiss keyboard
       >
-        <Ionicons name="arrow-back-outline" color={colors.primary} size={25} />
-      </TouchableOpacity>
-      <View style={styles.textContainer}>
-        <Text style={styles.headingText}>Let's get</Text>
-        <Text style={styles.headingText}>started</Text>
-      </View>
-      <View style={styles.formContainer}>
-        <View style={styles.inputContainer}>
-          <Ionicons name="person-outline" size={30} color={colors.secondary} />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter your name"
-            placeholderTextColor={colors.secondary}
-            value={name}
-            onChangeText={setName}
+        <TouchableOpacity
+          style={styles.backButtonWrapper}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons
+            name="arrow-back-outline"
+            color={colors.primary}
+            size={25}
           />
+        </TouchableOpacity>
+        <View style={styles.textContainer}>
+          <Text style={styles.headingText}>Let's get</Text>
+          <Text style={styles.headingText}>started</Text>
         </View>
-        <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={30} color={colors.secondary} />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter your email"
-            placeholderTextColor={colors.secondary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
-        </View>
-        <View style={styles.inputContainer}>
-          <SimpleLineIcons name="lock" size={30} color={colors.secondary} />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter your password"
-            placeholderTextColor={colors.secondary}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
-          <TouchableOpacity onPress={() => setSecureEntry((prev) => !prev)}>
+        <View style={styles.formContainer}>
+          <View style={styles.inputContainer}>
             <Ionicons
-              name={secureEntry ? "eye-off" : "eye"}
-              size={20}
+              name="person-outline"
+              size={30}
               color={colors.secondary}
             />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.pickerContainer}>
-          <Button
-            title="Select Birthdate"
-            onPress={() => setShowDatePicker(true)}
-          />
-          {showDatePicker && (
-            <DateTimePicker
-              value={birthdate}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter your name"
+              placeholderTextColor={colors.secondary}
+              value={name}
+              onChangeText={setName}
             />
-          )}
-        </View>
-        <View style={styles.pickerContainer}>
-          <Button
-            title="Select Birthtime"
-            onPress={() => setShowTimePicker(true)}
-          />
-          {showTimePicker && (
-            <DateTimePicker
-              value={birthtime}
-              mode="time"
-              display="default"
-              onChange={handleTimeChange}
+          </View>
+          <View style={styles.inputContainer}>
+            <Ionicons name="mail-outline" size={30} color={colors.secondary} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter your email"
+              placeholderTextColor={colors.secondary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
-          )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons
-            name="location-outline"
-            size={30}
-            color={colors.secondary}
-          />
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter Birthplace"
-            placeholderTextColor={colors.secondary}
-            value={birthplace}
-            onChangeText={handleBirthplaceChange}
-          />
-          {locationResults.length > 0 && (
-            <FlatList
-              data={locationResults}
-              keyExtractor={(item) => item.id.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => handleLocationSelect(item)}>
-                  <Text style={styles.locationItem}>{item.description}</Text>
-                </TouchableOpacity>
-              )}
+          </View>
+          <View style={styles.inputContainer}>
+            <SimpleLineIcons name="lock" size={30} color={colors.secondary} />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter your password"
+              placeholderTextColor={colors.secondary}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
-          )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Ionicons name="list-outline" size={30} color={colors.secondary} />
-          <TouchableOpacity
-            style={styles.textInput}
-            onPress={() => setShowPreferencesModal(true)}
-          >
-            <Text style={styles.textInputText}>
-              {preferences.length > 0
-                ? `Selected Preferences: ${preferences.join(", ")}`
-                : "Select Preferences"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {showPreferencesModal && (
-          <Modal
-            transparent
-            visible={showPreferencesModal}
-            animationType="slide"
-            onRequestClose={() => setShowPreferencesModal(false)}
-          >
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Select Preferences</Text>
-                {preferencesOptions.map((option) => (
+            <TouchableOpacity onPress={() => setSecureEntry((prev) => !prev)}>
+              <Ionicons
+                name={secureEntry ? "eye-off" : "eye"}
+                size={20}
+                color={colors.secondary}
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.pickerContainer}>
+            <Button
+              title="Select Birthdate"
+              onPress={() => setShowDatePicker(true)}
+            />
+            {showDatePicker && (
+              <DateTimePicker
+                value={birthdate}
+                mode="date"
+                display="default"
+                onChange={handleDateChange}
+              />
+            )}
+          </View>
+          <View style={styles.pickerContainer}>
+            <Button
+              title="Select Birthtime"
+              onPress={() => setShowTimePicker(true)}
+            />
+            {showTimePicker && (
+              <DateTimePicker
+                value={birthtime}
+                mode="time"
+                display="default"
+                onChange={handleTimeChange}
+              />
+            )}
+          </View>
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="location-outline"
+              size={30}
+              color={colors.secondary}
+            />
+            <TextInput
+              style={styles.textInput}
+              placeholder="Enter Birthplace"
+              placeholderTextColor={colors.secondary}
+              value={birthplace}
+              onChangeText={handleBirthplaceChange}
+            />
+            {locationResults.length > 0 && (
+              <ScrollView>
+                {locationResults.map((item) => (
                   <TouchableOpacity
-                    key={option}
-                    style={styles.preferenceItem}
-                    onPress={() => handlePreferenceSelect(option)}
+                    key={item.id}
+                    onPress={() => handleLocationSelect(item)}
                   >
-                    <Text style={styles.preferenceText}>
-                      {preferences.includes(option) ? "✓ " : ""}
-                      {option}
-                    </Text>
+                    <Text style={styles.locationItem}>{item.description}</Text>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity
-                  style={styles.modalButton}
-                  onPress={handlePreferencesSave}
-                >
-                  <Text style={styles.modalButtonText}>Save</Text>
-                </TouchableOpacity>
+              </ScrollView>
+            )}
+          </View>
+          <View style={styles.inputContainer}>
+            <Ionicons name="list-outline" size={30} color={colors.secondary} />
+            <TouchableOpacity
+              style={styles.textInput}
+              onPress={() => setShowPreferencesModal(true)}
+            >
+              <Text style={styles.textInputText}>
+                {preferences.length > 0
+                  ? `Selected Preferences: ${preferences.join(", ")}`
+                  : "Select Preferences"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {showPreferencesModal && (
+            <Modal
+              transparent
+              visible={showPreferencesModal}
+              animationType="slide"
+              onRequestClose={() => setShowPreferencesModal(false)}
+            >
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Select Preferences</Text>
+                  {preferencesOptions.map((option) => (
+                    <TouchableOpacity
+                      key={option}
+                      style={styles.preferenceItem}
+                      onPress={() => handlePreferenceSelect(option)}
+                    >
+                      <Text style={styles.preferenceText}>
+                        {preferences.includes(option) ? "✓ " : ""}
+                        {option}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handlePreferencesSave}
+                  >
+                    <Text style={styles.modalButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          </Modal>
-        )}
+            </Modal>
+          )}
 
-        <TouchableOpacity
-          style={styles.registerButtonWrapper}
-          onPress={handleRegister}
-        >
-          <Text style={styles.registerText}>Register</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          <TouchableOpacity
+            style={styles.registerButtonWrapper}
+            onPress={handleRegister}
+          >
+            <Text style={styles.registerText}>Register</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -355,6 +403,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     backgroundColor: colors.white,
+  },
+  containerTwo: {
+    flex: 1,
   },
   backButtonWrapper: {
     height: 40,

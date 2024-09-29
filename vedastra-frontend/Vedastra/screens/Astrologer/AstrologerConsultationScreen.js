@@ -99,7 +99,7 @@ const AstrologerConsultationScreen = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.header}>My Consultations</Text>
       {liveConsultations.length > 0 && (
-        <>
+        <View style={styles.live}>
           <Text style={styles.header}>Live Consultations</Text>
           <FlatList
             data={liveConsultations}
@@ -107,7 +107,7 @@ const AstrologerConsultationScreen = ({ navigation }) => {
             keyExtractor={(item) => item._id.toString()}
             contentContainerStyle={styles.consultationList}
           />
-        </>
+        </View>
       )}
       {scheduledConsultations.length > 0 && (
         <>
@@ -152,7 +152,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#f8f9fa",
+    marginTop: 40,
   },
+  live: {},
   header: {
     fontSize: 24,
     marginBottom: 5,

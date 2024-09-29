@@ -68,7 +68,13 @@ const AstrologerRegisterScreen = ({ navigation }) => {
       return Alert.alert("Error", "Please enter a valid email address.");
     }
 
-    if (!name || !email || !password || selectedSpecializations.length === 0) {
+    if (
+      !name ||
+      !email ||
+      !password ||
+      selectedSpecializations.length === 0 ||
+      !document
+    ) {
       return Alert.alert(
         "Error",
         "Please fill in all fields and select at least one specialization."
@@ -207,7 +213,7 @@ const AstrologerRegisterScreen = ({ navigation }) => {
               : "Select Specializations"}
           </Text>
         </TouchableOpacity>
-        <Button title="Upload Document (Optional)" onPress={pickDocument} />
+        <Button title="Upload Document" onPress={pickDocument} />
         {document && (
           <Text style={styles.documentInfo}>
             Document: {document.name} ({document.mimeType})

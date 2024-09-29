@@ -78,34 +78,85 @@ const ConsultationStatusScreen = ({ navigation }) => {
     }
   };
 
+  // Function to handle starting a new consultation with the same astrologer
+  const handleChatAgain = async (astrologerId) => {
+    try {
+      if (!astrologerId) {
+        throw new Error("Astrologer ID is missing.");
+      }
+
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("User is not authenticated. Token is missing.");
+      }
+
+      // Check if there is already an active consultation
+      if (consultations.live.length > 0) {
+        // Navigate to the active live consultation's chat screen
+        const activeConsultation = consultations.live[0]; // Assuming the first live consultation is active
+        navigation.navigate("ChatScreen", {
+          consultationId: activeConsultation._id,
+        });
+        return;
+      }
+
+      // Start a new consultation if there's no active live consultation
+      const response = await axiosInstance.post(
+        `/consultations/start`,
+        { astrologerId, communicationType: "chat" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const consultationId = response.data.consultationId;
+
+      // Navigate to the chat screen for the new consultation
+      navigation.navigate("ChatScreen", { consultationId });
+    } catch (error) {
+      console.error(
+        "Start new consultation error:",
+        error.response ? error.response.data : error.message
+      );
+      setError("Failed to start a new consultation.");
+    }
+  };
+
   // Render a single consultation item
-  const renderConsultationItem = ({ item }) => (
-    <View style={styles.consultationItem}>
-      <Text style={styles.consultationTitle}>
-        Astrologer: {item.astrologerId.name}
-      </Text>
-      <Text>Scheduled At: {new Date(item.scheduledAt).toLocaleString()}</Text>
-      <Text>Status: {item.status}</Text>
-      {item.status === "scheduled" && (
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => handleCancel(item._id)}
-        >
-          <Text style={styles.cancelButtonText}>Cancel Consultation</Text>
-        </TouchableOpacity>
-      )}
-      {item.status === "live" && (
-        <TouchableOpacity
-          style={styles.chatButton}
-          onPress={() =>
-            navigation.navigate("ChatScreen", { consultationId: item._id })
-          }
-        >
-          <Text style={styles.chatButtonText}>Open Chat</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
+  // Render a single consultation item
+  const renderConsultationItem = ({ item }) => {
+    // Check if there is any live consultation
+    const hasLiveConsultation = consultations.live.length > 0;
+
+    return (
+      <View style={styles.consultationItem}>
+        <Text style={styles.consultationTitle}>
+          Astrologer: {item.astrologerId.name}
+        </Text>
+        <Text>Started Date: {new Date(item.createdAt).toLocaleString()}</Text>
+        <Text>Status: {item.status}</Text>
+
+        {item.status === "live" && (
+          <TouchableOpacity
+            style={styles.chatButton}
+            onPress={() =>
+              navigation.navigate("ChatScreen", { consultationId: item._id })
+            }
+          >
+            <Text style={styles.chatButtonText}>Open Chat</Text>
+          </TouchableOpacity>
+        )}
+        {/* Only show "Chat Again" if there is no live consultation */}
+        {item.status === "completed" && !hasLiveConsultation && (
+          <TouchableOpacity
+            style={styles.chatAgainButton}
+            onPress={() => handleChatAgain(item.astrologerId._id)} // Start a new consultation with the same astrologer
+          >
+            <Text style={styles.chatAgainButtonText}>Chat Again</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -115,27 +166,18 @@ const ConsultationStatusScreen = ({ navigation }) => {
       ) : (
         <>
           {consultations.live.length > 0 && (
-            <>
+            <View style={styles.live}>
               <Text style={styles.sectionHeader}>Live Consultations</Text>
               <FlatList
                 data={consultations.live}
                 renderItem={renderConsultationItem}
                 keyExtractor={(item) => item._id.toString()}
                 contentContainerStyle={styles.consultationList}
+                showsVerticalScrollIndicator={false}
               />
-            </>
+            </View>
           )}
-          {consultations.scheduled.length > 0 && (
-            <>
-              <Text style={styles.sectionHeader}>Scheduled Consultations</Text>
-              <FlatList
-                data={consultations.scheduled}
-                renderItem={renderConsultationItem}
-                keyExtractor={(item) => item._id.toString()}
-                contentContainerStyle={styles.consultationList}
-              />
-            </>
-          )}
+
           {consultations.completed.length > 0 && (
             <>
               <Text style={styles.sectionHeader}>Completed Consultations</Text>
@@ -144,6 +186,7 @@ const ConsultationStatusScreen = ({ navigation }) => {
                 renderItem={renderConsultationItem}
                 keyExtractor={(item) => item._id.toString()}
                 contentContainerStyle={styles.consultationList}
+                showsVerticalScrollIndicator={false}
               />
             </>
           )}
@@ -167,9 +210,11 @@ const ConsultationStatusScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 40,
     padding: 20,
     backgroundColor: "#f8f9fa",
   },
+  live: {},
   header: {
     fontSize: 24,
     marginBottom: 0,
@@ -213,11 +258,22 @@ const styles = StyleSheet.create({
   chatButton: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: colors.darkAccent,
+    backgroundColor: colors.primary,
     borderRadius: 5,
     alignItems: "center",
   },
   chatButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+  },
+  chatAgainButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: colors.primary, // You can use any color you'd like
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  chatAgainButtonText: {
     color: "#ffffff",
     fontSize: 16,
   },

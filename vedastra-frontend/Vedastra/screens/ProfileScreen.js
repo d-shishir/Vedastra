@@ -215,11 +215,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     alignItems: "center",
-    padding: 20,
+    padding: 0,
   },
   infoContainer: {
     width: "80%",
-    padding: 20,
+    padding: 10,
     backgroundColor: "#f0f0f0",
     borderRadius: 10,
     borderColor: "#ddd",

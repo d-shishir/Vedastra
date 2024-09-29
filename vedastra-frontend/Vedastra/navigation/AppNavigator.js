@@ -39,9 +39,9 @@ const UserTabNavigator = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === "UserHome") {
+          if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "ConsultationStatus") {
+          } else if (route.name === "Consultations") {
             iconName = focused ? "calendar" : "calendar-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
@@ -57,15 +57,18 @@ const UserTabNavigator = () => {
       }}
     >
       <Tab.Screen
-        name="UserHome"
+        name="Home"
         component={UserHomeScreen}
         options={{
           headerShown: false,
         }}
       />
       <Tab.Screen
-        name="ConsultationStatus"
+        name="Consultations"
         component={ConsultationStatusScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="Profile"
@@ -112,9 +115,9 @@ const AstrologerTabNavigator = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === "AstrologerHome") {
+          if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
-          } else if (route.name === "UpcomingConsultations") {
+          } else if (route.name === "Consultations") {
             iconName = focused ? "calendar" : "calendar-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
@@ -130,15 +133,18 @@ const AstrologerTabNavigator = () => {
       }}
     >
       <Tab.Screen
-        name="AstrologerHome"
+        name="Home"
         component={AstrologerHomeScreen}
         options={{
           headerShown: false,
         }}
       />
       <Tab.Screen
-        name="UpcomingConsultations"
+        name="Consultations"
         component={AstrologerConsultationScreen}
+        options={{
+          headerShown: false,
+        }}
       />
       <Tab.Screen
         name="Profile"

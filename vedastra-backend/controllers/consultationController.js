@@ -1,4 +1,5 @@
 const Consultation = require("../models/Consultation"); // Adjust the path as needed
+const Chat = require("../models/Chat");
 const mongoose = require("mongoose");
 const cryptoUtils = require("../utils/cryptoUtils");
 
@@ -63,39 +64,62 @@ const startConsultation = async (req, res) => {
     const { astrologerId, communicationType } = req.body;
     const userId = req.user.id;
 
+    // Validate request body
     if (!astrologerId || !communicationType) {
       return res
         .status(400)
         .json({ message: "astrologerId and communicationType are required" });
     }
 
+    // Generate key pairs for the user and the astrologer
     const { publicKey: userPublicKey, privateKey: userPrivateKey } =
       cryptoUtils.generateKeyPair();
     const { publicKey: astrologerPublicKey, privateKey: astrologerPrivateKey } =
       cryptoUtils.generateKeyPair();
 
-    // Derive the shared secret
+    // Derive the shared secret using Diffie-Hellman
     const sharedSecret = cryptoUtils.deriveSecret(
       userPrivateKey,
       astrologerPublicKey
     );
-    const encryptedSharedSecret = sharedSecret.toString("hex"); // Store the shared secret in hex format
+    const encryptedSharedSecret = sharedSecret.toString("hex"); // Convert the shared secret to hex format
 
+    // Create a new consultation record
     const newConsultation = new Consultation({
       userId,
       astrologerId,
       scheduledAt: new Date(),
-      status: "live",
+      status: "live", // Set the status to "live"
       communicationType,
       userPublicKey,
       astrologerPublicKey,
-      sharedSecret: encryptedSharedSecret, // Store it here
+      sharedSecret: encryptedSharedSecret, // Store the shared secret
     });
 
+    // Save the new consultation to the database
     await newConsultation.save();
-    res.status(201).json(newConsultation);
+
+    // Create an empty chat session for this consultation
+    const newChat = new Chat({
+      consultationId: newConsultation._id, // Link the chat to the consultation
+      messages: [], // Initialize with an empty messages array
+    });
+
+    // Save the new chat session to the database
+    await newChat.save();
+
+    // Respond with the consultation and chat details
+    res.status(201).json({
+      consultationId: newConsultation._id, // Explicitly include consultationId
+      chatId: newChat._id, // Include chatId in the response
+      consultation: newConsultation,
+      chat: newChat,
+    });
   } catch (error) {
+    // Log the error for debugging
     console.error("Error starting consultation:", error);
+
+    // Send a server error response
     res.status(500).json({ message: "Server error" });
   }
 };
